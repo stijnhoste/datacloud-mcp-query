@@ -6,7 +6,7 @@
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 4 | 66 |
+| **Tools** | 3 | 66 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 | **Setup** | Create Connected App | Just `sf org login web` |
