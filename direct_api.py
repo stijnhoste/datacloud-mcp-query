@@ -62,7 +62,8 @@ class DirectAPISession:
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept': 'application/json'
-            }
+            },
+            timeout=120
         )
 
         if response.status_code >= 400:
@@ -138,7 +139,8 @@ class DirectAPISession:
             params=params,
             json=json_data,
             data=data,
-            headers=headers
+            headers=headers,
+            timeout=120
         )
 
         if response.status_code >= 400:

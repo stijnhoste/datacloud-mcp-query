@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from typing import Optional
 from mcp.server.fastmcp import FastMCP
 from pydantic import Field
@@ -13,6 +14,29 @@ from connect_api_segments import ConnectAPIClient
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
+
+
+def _validate_identifier(name: str, identifier_type: str = "identifier") -> str:
+    """
+    Validate and sanitize SQL identifier to prevent SQL injection.
+
+    Allows: alphanumeric, underscores, and Data Cloud naming patterns (ssot__Name__c, etc.)
+    Raises ValueError if invalid.
+    """
+    if not name:
+        raise ValueError(f"Empty {identifier_type} name")
+
+    # Data Cloud identifiers follow pattern: namespace__name__suffix (e.g., ssot__Individual__dlm)
+    # Allow: letters, numbers, underscores, percent (for LIKE patterns)
+    if not re.match(r'^[a-zA-Z0-9_%]+$', name):
+        raise ValueError(f"Invalid {identifier_type} name: {name}. Only alphanumeric characters, underscores, and percent signs allowed.")
+
+    # Prevent SQL keywords that could be used maliciously
+    sql_keywords = {'DROP', 'DELETE', 'INSERT', 'UPDATE', 'TRUNCATE', 'ALTER', 'CREATE', 'EXEC', 'EXECUTE', '--', ';'}
+    if name.upper() in sql_keywords or '--' in name or ';' in name:
+        raise ValueError(f"Invalid {identifier_type} name: {name}. SQL keywords not allowed.")
+
+    return name
 
 
 # Create an MCP server
@@ -39,7 +63,9 @@ def query(
 
 @mcp.tool(description="Lists the available tables in the database")
 def list_tables() -> list[str]:
-    sql = "SELECT c.relname AS TABLE_NAME FROM pg_catalog.pg_namespace n, pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_description d ON (c.oid = d.objoid AND d.objsubid = 0  and d.classoid = 'pg_class'::regclass) WHERE c.relnamespace = n.oid AND c.relname LIKE '%s'" % DEFAULT_LIST_TABLE_FILTER
+    # Validate the filter pattern to prevent SQL injection
+    validated_filter = _validate_identifier(DEFAULT_LIST_TABLE_FILTER, "table filter")
+    sql = f"SELECT c.relname AS TABLE_NAME FROM pg_catalog.pg_namespace n, pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_description d ON (c.oid = d.objoid AND d.objsubid = 0  and d.classoid = 'pg_class'::regclass) WHERE c.relnamespace = n.oid AND c.relname LIKE '{validated_filter}'"
     result = run_query(oauth_session, sql)
     # Extract data from the result dictionary
     data = result.get("data", [])
@@ -50,7 +76,9 @@ def list_tables() -> list[str]:
 def describe_table(
     table: str = Field(description="The table name"),
 ) -> list[str]:
-    sql = f"SELECT a.attname FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_class c ON (c.relnamespace = n.oid) JOIN pg_catalog.pg_attribute a ON (a.attrelid = c.oid) JOIN pg_catalog.pg_type t ON (a.atttypid = t.oid) LEFT JOIN pg_catalog.pg_attrdef def ON (a.attrelid = def.adrelid AND a.attnum = def.adnum) LEFT JOIN pg_catalog.pg_description dsc ON (c.oid = dsc.objoid AND a.attnum = dsc.objsubid) LEFT JOIN pg_catalog.pg_class dc ON (dc.oid = dsc.classoid AND dc.relname = 'pg_class') LEFT JOIN pg_catalog.pg_namespace dn ON (dc.relnamespace = dn.oid AND dn.nspname = 'pg_catalog') WHERE a.attnum > 0 AND NOT a.attisdropped AND c.relname='{table}'"
+    # Validate the table name to prevent SQL injection
+    validated_table = _validate_identifier(table, "table")
+    sql = f"SELECT a.attname FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_class c ON (c.relnamespace = n.oid) JOIN pg_catalog.pg_attribute a ON (a.attrelid = c.oid) JOIN pg_catalog.pg_type t ON (a.atttypid = t.oid) LEFT JOIN pg_catalog.pg_attrdef def ON (a.attrelid = def.adrelid AND a.attnum = def.adnum) LEFT JOIN pg_catalog.pg_description dsc ON (c.oid = dsc.objoid AND a.attnum = dsc.objsubid) LEFT JOIN pg_catalog.pg_class dc ON (dc.oid = dsc.classoid AND dc.relname = 'pg_class') LEFT JOIN pg_catalog.pg_namespace dn ON (dc.relnamespace = dn.oid AND dn.nspname = 'pg_catalog') WHERE a.attnum > 0 AND NOT a.attisdropped AND c.relname='{validated_table}'"
     result = run_query(oauth_session, sql)
     # Extract data from the result dictionary
     data = result.get("data", [])

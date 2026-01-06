@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 from typing import Dict, List, Optional, Union
 
 import requests
@@ -9,6 +8,16 @@ from oauth import OAuthSession, OAuthConfig
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
+
+
+class DataCloudQueryError(Exception):
+    """Custom exception for Data Cloud query errors with structured information."""
+
+    def __init__(self, status_code: int, reason: str, message: str):
+        self.status_code = status_code
+        self.reason = reason
+        self.message = message
+        super().__init__(f"[{status_code}] {reason}: {message}")
 
 
 def _handle_error_response(response: requests.Response):
@@ -26,16 +35,18 @@ def _handle_error_response(response: requests.Response):
                         errors_details_json) if errors_details_json else None
                     if details:
                         message = errors_details_json
-                except Exception:
+                except json.JSONDecodeError:
+                    # Keep original message if JSON parsing fails
                     pass
-        except Exception:
+        except json.JSONDecodeError:
+            # Keep original message if response isn't JSON
             pass
 
-        # Raise exception with error message
-        raise Exception(
-            response.status_code,
-            response.reason,
-            message,
+        # Raise custom exception with structured error information
+        raise DataCloudQueryError(
+            status_code=response.status_code,
+            reason=response.reason,
+            message=message,
         )
 
 
@@ -79,14 +90,18 @@ def run_query(
     status_obj = submit_payload.get("status", {})
     query_id = status_obj.get("queryId") or submit_payload.get("queryId")
     if not query_id:
-        raise Exception(500, "MissingQueryId",
-                        "Query ID not returned by the API.")
+        raise DataCloudQueryError(
+            status_code=500,
+            reason="MissingQueryId",
+            message="Query ID not returned by the API."
+        )
 
     # Collect initial rows and metadata if present
     rows: list = submit_payload.get("data", []) or []
     metadata = submit_payload.get("metadata", [])
     completion = status_obj.get("completionStatus")
-    total_row_count = int(status_obj.get("rowCount"))
+    row_count_val = status_obj.get("rowCount")
+    total_row_count = int(row_count_val) if row_count_val is not None else 0
 
     # Step 2: poll for completion when needed (long-polling via waitTimeMs)
     poll_count = 0
@@ -109,7 +124,8 @@ def run_query(
         _handle_error_response(poll_response)
         poll_payload = poll_response.json()
         completion = poll_payload.get("completionStatus")
-        total_row_count = int(poll_payload.get("rowCount"))
+        poll_row_count = poll_payload.get("rowCount")
+        total_row_count = int(poll_row_count) if poll_row_count is not None else total_row_count
 
     # Step 3: retrieve remaining rows via pagination
     while len(rows) < total_row_count:
@@ -136,8 +152,11 @@ def run_query(
         returned_rows = int(chunk.get("returnedRows", len(chunk_rows)))
 
         if returned_rows == 0:
-            raise Exception(500, "MissingRows",
-                            "Expected rows to be returned, but received 0.")
+            raise DataCloudQueryError(
+                status_code=500,
+                reason="MissingRows",
+                message="Expected rows to be returned, but received 0."
+            )
 
         rows.extend(chunk_rows)
         logger.debug(

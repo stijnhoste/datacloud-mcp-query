@@ -199,6 +199,7 @@ class OAuthSession:
                 "code_verifier": code_verifier,
             },
             headers={"Accept": "application/json"},
+            timeout=120,
         )
 
         logger.info(f"Token exchange response: status={response.status_code}, elapsed={response.elapsed.total_seconds():.2f}s")
