@@ -968,6 +968,90 @@ def get_semantic_search_config() -> dict:
     return connect_api.get_semantic_search_config()
 
 
+# ========== Identity Resolution Tools (Phase 6) ==========
+
+@mcp.tool(description="List all identity resolution rulesets")
+def list_identity_rulesets() -> dict:
+    """
+    Returns a list of all identity resolution rulesets.
+    Identity resolution matches and merges duplicate profiles.
+    """
+    return connect_api.list_identity_rulesets()
+
+
+@mcp.tool(description="Get details for a specific identity resolution ruleset")
+def get_identity_ruleset(
+    ruleset_name: str = Field(description="Name of the identity resolution ruleset"),
+) -> dict:
+    """
+    Returns detailed information about an identity resolution ruleset.
+    """
+    return connect_api.get_identity_ruleset(ruleset_name)
+
+
+@mcp.tool(description="Run identity resolution (requires approval - processes data)")
+def run_identity_resolution(
+    ruleset_name: str = Field(description="Name of the identity resolution ruleset to run"),
+) -> dict:
+    """
+    Run an identity resolution process to match and merge profiles.
+    WARNING: This processes data and requires explicit approval.
+    """
+    return connect_api.run_identity_resolution(ruleset_name)
+
+
+# ========== Limits Tool (Phase 6) ==========
+
+@mcp.tool(description="Get Data Cloud limits and usage statistics")
+def get_limits() -> dict:
+    """
+    Returns current API rate limits, storage quotas, and usage statistics.
+    Useful for monitoring resource consumption.
+    """
+    return connect_api.get_limits()
+
+
+# ========== Data Actions Tools (Phase 6) ==========
+
+@mcp.tool(description="List all data actions")
+def list_data_actions() -> dict:
+    """
+    Returns a list of all data actions.
+    Data actions are automated processes triggered by conditions.
+    """
+    return connect_api.list_data_actions()
+
+
+@mcp.tool(description="List all data action targets")
+def list_data_action_targets() -> dict:
+    """
+    Returns a list of available targets for data actions.
+    """
+    return connect_api.list_data_action_targets()
+
+
+# ========== Network & Infrastructure Tools (Phase 6) ==========
+
+@mcp.tool(description="List all private network routes")
+def list_private_network_routes() -> dict:
+    """
+    Returns a list of private network route configurations.
+    Private routes enable secure connectivity to private data sources.
+    """
+    return connect_api.list_private_network_routes()
+
+
+@mcp.tool(description="Get status of a data kit component")
+def get_data_kit_status(
+    component_id: str = Field(description="ID of the data kit component"),
+) -> dict:
+    """
+    Returns the status of a data kit component installation.
+    Data kits are packaged solutions for Data Cloud.
+    """
+    return connect_api.get_data_kit_status(component_id)
+
+
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(

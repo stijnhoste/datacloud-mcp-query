@@ -654,3 +654,105 @@ class ConnectAPIClient:
             dict: Global semantic search settings
         """
         return self._request('GET', '/semantic-search-config')
+
+    # ========== Identity Resolution API (Phase 6) ==========
+
+    def list_identity_rulesets(self) -> dict:
+        """
+        List all identity resolution rulesets.
+
+        Identity resolution uses rules to match and merge duplicate profiles
+        across different data sources.
+
+        Returns:
+            dict: List of identity resolution ruleset metadata
+        """
+        return self._request('GET', '/identity-resolutions')
+
+    def get_identity_ruleset(self, ruleset_name: str) -> dict:
+        """
+        Get details for a specific identity resolution ruleset.
+
+        Args:
+            ruleset_name: Name of the identity resolution ruleset
+
+        Returns:
+            dict: Ruleset configuration including match rules and merge policies
+        """
+        return self._request('GET', f'/identity-resolutions/{ruleset_name}')
+
+    def run_identity_resolution(self, ruleset_name: str) -> dict:
+        """
+        Run an identity resolution process.
+
+        Args:
+            ruleset_name: Name of the identity resolution ruleset to run
+
+        Returns:
+            dict: Run result including job ID
+        """
+        return self._request('POST', f'/identity-resolutions/{ruleset_name}/actions/run')
+
+    # ========== Limits API (Phase 6) ==========
+
+    def get_limits(self) -> dict:
+        """
+        Get Data Cloud limits and usage.
+
+        Returns current API rate limits, storage quotas, and usage statistics.
+
+        Returns:
+            dict: Limits and current usage
+        """
+        return self._request('GET', '/limits')
+
+    # ========== Data Actions API (Phase 6) ==========
+
+    def list_data_actions(self) -> dict:
+        """
+        List all data actions.
+
+        Data actions are automated processes that run when specific
+        conditions are met.
+
+        Returns:
+            dict: List of data action metadata
+        """
+        return self._request('GET', '/data-actions')
+
+    def list_data_action_targets(self) -> dict:
+        """
+        List all data action targets.
+
+        Returns:
+            dict: List of available targets for data actions
+        """
+        return self._request('GET', '/data-action-targets')
+
+    # ========== Network & Infrastructure API (Phase 6) ==========
+
+    def list_private_network_routes(self) -> dict:
+        """
+        List all private network routes.
+
+        Private network routes enable secure connectivity between
+        Data Cloud and private data sources via VPN or private links.
+
+        Returns:
+            dict: List of private network route configurations
+        """
+        return self._request('GET', '/private-network-routes')
+
+    def get_data_kit_status(self, component_id: str) -> dict:
+        """
+        Get status of a data kit component.
+
+        Data kits are packaged solutions that can be installed into Data Cloud.
+
+        Args:
+            component_id: ID of the data kit component
+
+        Returns:
+            dict: Component status and details
+        """
+        return self._request('GET', f'/data-kit-components/{component_id}/status')
