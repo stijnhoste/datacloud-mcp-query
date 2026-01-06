@@ -1,81 +1,203 @@
-# Data 360 Query MCP Server
+# Data Cloud MCP Server
 
-This MCP server provides a seamless integration between Cursor and Salesforce Data Cloud (formerly known as CDP), allowing you to execute SQL queries directly from Cursor. The server handles OAuth authentication with Salesforce and provides tools for exploring and querying Data Cloud tables.
+This MCP server provides a seamless integration between AI assistants (Cursor, Claude Code) and Salesforce Data Cloud, allowing you to execute SQL queries, explore metadata, work with calculated insights, and manage data directly from your development environment.
 
 ## Features
 
-- Execute SQL queries against Salesforce Data Cloud
-- List available tables in the database
-- Describe table columns and structure
-- Automatic OAuth2 authentication flow with Salesforce
+- **SQL Queries** - Execute PostgreSQL-dialect SQL against Data Cloud
+- **Schema Discovery** - List tables, describe columns, search by keyword
+- **Rich Metadata** - Access field types, relationships, and entity categories
+- **Calculated Insights** - Query pre-aggregated metrics
+- **Data Graphs** - Traverse unified customer profiles
+- **Identity Resolution** - Look up unified IDs from source records
+- **Data Ingestion** - Insert and delete records (with approval)
+- **Query Validation** - Client-side SQL validation with suggestions
 
-## Adding to Cursor
+## Quick Start
 
-1. Clone this repository to your local machine
-2. Install the required dependencies:
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/salesforce/datacloud-mcp-query.git
+   cd datacloud-mcp-query
+   ```
+
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Connect to the MCP server in Cursor:
-   - Open Cursor IDE.
-   - Go to **Cursor Settings** → **MCP**.
-   - Click on **Add new global MCP server**.
-   - Fill in the details:
-   ```json
-       "mcpServers": {
-         ...
-        "datacloud": {
-          "command": "<path to python>",
-          "args": [
-            "<full path to>/server.py"
-          ],
-          "env": {
-            "SF_CLIENT_ID": "<Client Id>",
-            "SF_CLIENT_SECRET": "<Client Secret>>"
-          },
-          "disabled": false,
-          "autoApprove": ["suggest_table_and_fields", "describe_table", "list_tables"]
-        }
-        ...
+
+3. Set up your Salesforce connected app (see [Connected App Setup](CONNECTED_APP_SETUP.md))
+
+4. Configure in your MCP client (Cursor or Claude Code)
+
+## Adding to Cursor
+
+Add to your Cursor settings (`~/.cursor/mcp.json` or through Cursor Settings → MCP):
+
+```json
+{
+  "mcpServers": {
+    "datacloud": {
+      "command": "python",
+      "args": ["/path/to/datacloud-mcp-query/server.py"],
+      "env": {
+        "SF_CLIENT_ID": "<your-client-id>",
+        "SF_CLIENT_SECRET": "<your-client-secret>"
+      },
+      "autoApprove": [
+        "list_tables",
+        "describe_table",
+        "describe_table_full",
+        "get_metadata",
+        "get_relationships",
+        "explore_table",
+        "search_tables",
+        "list_calculated_insights",
+        "list_data_graphs",
+        "validate_query",
+        "format_sql"
+      ]
+    }
+  }
+}
+```
+
+## Adding to Claude Code
+
+Add to your Claude Code MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "datacloud": {
+      "command": "python",
+      "args": ["/path/to/datacloud-mcp-query/server.py"],
+      "env": {
+        "SF_CLIENT_ID": "<your-client-id>",
+        "SF_CLIENT_SECRET": "<your-client-secret>"
       }
-   ```
-   - Enable the MCP server and click refresh which should show the tool list
+    }
+  }
+}
+```
 
 ## Configuration
 
-The server requires the following environment variables:
-
 ### Required Environment Variables
 
-- `SF_CLIENT_ID`: Your Salesforce OAuth client ID
-- `SF_CLIENT_SECRET`: Your Salesforce OAuth client secret
-
-See [Connected App Setup Guide](CONNECTED_APP_SETUP.md) for instructions on how to obtain these credentials.
+| Variable | Description |
+|----------|-------------|
+| `SF_CLIENT_ID` | Salesforce connected app client ID |
+| `SF_CLIENT_SECRET` | Salesforce connected app client secret |
 
 ### Optional Environment Variables
 
-- `SF_LOGIN_URL`: The Salesforce login URL (default: 'login.salesforce.com')
-- `SF_CALLBACK_URL`: The OAuth callback URL for the authentication flow (default: 'http://localhost:5556/Callback'). This URL must be registered in your Salesforce connected app settings. See [Connected App Setup Guide](CONNECTED_APP_SETUP.md) for detailed instructions.
-- `DEFAULT_LIST_TABLE_FILTER`: Filter pattern for listing tables (default: '%'). You can use this to filter for example to known "curated" tables that all share the same prefix. You can use the SQL Like syntax to express the filters.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SF_LOGIN_URL` | `login.salesforce.com` | Salesforce login URL |
+| `SF_CALLBACK_URL` | `http://localhost:55556/Callback` | OAuth callback URL |
+| `DEFAULT_LIST_TABLE_FILTER` | `%` | SQL LIKE pattern for filtering tables |
 
 ## Available Tools
 
-The server provides the following tools:
+### Core Query Tools
 
-1. **query**: Execute SQL queries against Data Cloud
-   - Supports PostgreSQL dialect
-   - Returns query results in a structured format
+| Tool | Description |
+|------|-------------|
+| `query(sql)` | Execute SQL queries against Data Cloud |
+| `validate_query(sql, check_metadata)` | Validate SQL syntax before execution |
+| `format_sql(sql)` | Format SQL for readability |
 
-2. **list_tables**: List all available tables in Data Cloud
-   - Filtered by `DEFAULT_LIST_TABLE_FILTER` pattern
+### Schema Discovery Tools
 
-3. **describe_table**: Get detailed information about a specific table
-   - Shows column names and structure
+| Tool | Description |
+|------|-------------|
+| `list_tables()` | List available tables |
+| `describe_table(table)` | Get column names for a table |
+| `describe_table_full(table)` | Get detailed schema with field types |
+| `get_metadata(entity_name, entity_type, entity_category)` | Get rich metadata from Direct API |
+| `get_relationships(entity_name)` | Get entity relationships for JOINs |
+
+### Data Exploration Tools
+
+| Tool | Description |
+|------|-------------|
+| `explore_table(table, sample_size)` | Schema + samples + column profiles |
+| `search_tables(keyword)` | Search tables/columns by keyword |
+
+### Calculated Insights Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_calculated_insights()` | List available calculated insights |
+| `query_calculated_insight(insight_name, dimensions, measures, filters)` | Query pre-aggregated metrics |
+
+### Data Graph Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_data_graphs()` | List available data graphs |
+| `query_data_graph(graph_name, record_id, lookup_keys)` | Query unified profiles |
+
+### Identity Tools
+
+| Tool | Description |
+|------|-------------|
+| `lookup_unified_id(entity_name, data_source_id, data_source_object_id, source_record_id)` | Look up unified IDs |
+
+### Data Modification Tools (Require Approval)
+
+| Tool | Description |
+|------|-------------|
+| `ingest_records(source_name, object_name, records)` | Insert records into Data Cloud |
+| `delete_records(source_name, object_name, record_ids)` | Delete records from Data Cloud |
+
+## autoApprove Settings
+
+For agentic workflows, you can auto-approve read-only tools. Recommended settings:
+
+**Safe to auto-approve** (read-only):
+- `list_tables`, `describe_table`, `describe_table_full`
+- `get_metadata`, `get_relationships`
+- `explore_table`, `search_tables`
+- `list_calculated_insights`, `list_data_graphs`
+- `validate_query`, `format_sql`
+
+**Requires explicit approval** (executes queries or modifies data):
+- `query` - Executes SQL against Data Cloud
+- `query_calculated_insight` - Queries calculated insights
+- `query_data_graph` - Queries data graphs
+- `lookup_unified_id` - Queries identity resolution
+- `ingest_records` - Inserts data
+- `delete_records` - Deletes data
 
 ## Authentication
 
-The server implements an OAuth2 flow with Salesforce:
-- Automatically opens a browser window for authentication
-- Handles token exchange and refresh
-- Maintains session for subsequent queries
-- Token expires after 110 minutes and is automatically refreshed
+The server implements OAuth2 with PKCE:
+- Opens a browser window for Salesforce authentication
+- Caches tokens to `~/.datacloud_mcp_token.json`
+- Tokens expire after 110 minutes and are auto-refreshed
+- For Direct APIs, performs a second token exchange for tenant-specific access
+
+## API Architecture
+
+```
+Connect APIs (/services/data/v63.0/ssot/*)
+├── query-sql    → query()
+└── pg_catalog   → list_tables(), describe_table()
+
+Direct APIs (/api/v1/*)  ← Faster, requires 2-step auth
+├── metadata               → get_metadata(), describe_table_full(), get_relationships()
+├── insight/*              → list_calculated_insights(), query_calculated_insight()
+├── dataGraph/*            → list_data_graphs(), query_data_graph()
+├── universalIdLookup/*    → lookup_unified_id()
+└── ingest/*               → ingest_records(), delete_records()
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+See [LICENSE](LICENSE) for details.
