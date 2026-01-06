@@ -4,7 +4,7 @@ Segment tools - create, manage, and query segments.
 from typing import Optional
 from pydantic import Field
 
-from .base import mcp, ensure_session, get_connect_api, parse_json_param
+from .base import mcp, ensure_session, get_connect_api, parse_json_param, resolve_field_default
 
 
 @mcp.tool(description="List all segments in Data Cloud")
@@ -31,7 +31,10 @@ def get_segment_members(
 ) -> dict:
     """Get list of members belonging to a segment."""
     ensure_session()
-    return get_connect_api().get_segment_members(segment_name, limit=limit, offset=offset)
+    # Resolve Field defaults for direct Python calls
+    resolved_limit = resolve_field_default(limit)
+    resolved_offset = resolve_field_default(offset)
+    return get_connect_api().get_segment_members(segment_name, limit=resolved_limit, offset=resolved_offset)
 
 
 @mcp.tool(description="Count members in a segment")

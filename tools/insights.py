@@ -35,6 +35,11 @@ def query_calculated_insight(
     """Query pre-aggregated metrics from a calculated insight."""
     ensure_session()
 
+    # Resolve Field defaults for direct Python calls
+    dimensions = resolve_field_default(dimensions)
+    measures = resolve_field_default(measures)
+    filters = resolve_field_default(filters)
+
     dim_list = dimensions.split(",") if dimensions else None
     meas_list = measures.split(",") if measures else None
     filter_list = None

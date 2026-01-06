@@ -146,7 +146,8 @@ class ConnectAPIClient(BaseClient):
         Returns:
             dict: Segment count result
         """
-        return self._request('POST', f'/segments/{segment_name}/actions/count')
+        # API requires an entity body for POST
+        return self._request('POST', f'/segments/{segment_name}/actions/count', json_data={})
 
     def create_segment(self, segment_definition: dict) -> dict:
         """
