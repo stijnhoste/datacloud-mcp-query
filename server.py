@@ -290,6 +290,141 @@ def search_tables(
     return result
 
 
+# ========== Calculated Insights Tools ==========
+
+@mcp.tool(description="List all available calculated insights (pre-aggregated metrics)")
+def list_calculated_insights() -> dict:
+    """
+    Returns metadata for all calculated insights including:
+    - Insight names and descriptions
+    - Available dimensions and measures
+    - Filter options
+    """
+    return direct_api.get_calculated_insights_metadata()
+
+
+@mcp.tool(description="Query a calculated insight with specific dimensions, measures, and filters")
+def query_calculated_insight(
+    insight_name: str = Field(description="Name of the calculated insight to query"),
+    dimensions: Optional[str] = Field(default=None, description="Comma-separated list of dimension fields"),
+    measures: Optional[str] = Field(default=None, description="Comma-separated list of measure fields"),
+    filters: Optional[str] = Field(default=None, description="JSON-encoded filter conditions"),
+    batch_size: Optional[int] = Field(default=None, description="Number of records per batch"),
+) -> dict:
+    """
+    Query pre-aggregated metrics from a calculated insight.
+    Calculated insights are pre-computed aggregations that are faster than ad-hoc queries.
+    """
+    dim_list = dimensions.split(",") if dimensions else None
+    meas_list = measures.split(",") if measures else None
+
+    filter_list = None
+    if filters:
+        try:
+            filter_list = json.loads(filters)
+        except json.JSONDecodeError:
+            return {"error": "Invalid JSON in filters parameter"}
+
+    return direct_api.query_calculated_insight(
+        insight_name=insight_name,
+        dimensions=dim_list,
+        measures=meas_list,
+        filters=filter_list,
+        batch_size=batch_size
+    )
+
+
+# ========== Data Graph Tools ==========
+
+@mcp.tool(description="List all available data graphs")
+def list_data_graphs() -> dict:
+    """
+    Returns metadata for all data graphs including:
+    - Graph names and descriptions
+    - Available entities and relationships
+    """
+    return direct_api.get_data_graph_metadata()
+
+
+@mcp.tool(description="Query a data graph to get a complete profile with related records")
+def query_data_graph(
+    graph_name: str = Field(description="Name of the data graph"),
+    record_id: Optional[str] = Field(default=None, description="ID of the record to retrieve"),
+    lookup_keys: Optional[str] = Field(default=None, description="JSON-encoded array of lookup key objects"),
+) -> dict:
+    """
+    Get a complete profile from a data graph, including all related records.
+    Use either record_id OR lookup_keys (not both).
+    """
+    if record_id:
+        return direct_api.query_data_graph_by_id(graph_name, record_id)
+    elif lookup_keys:
+        try:
+            keys = json.loads(lookup_keys)
+            return direct_api.query_data_graph_by_lookup(graph_name, keys)
+        except json.JSONDecodeError:
+            return {"error": "Invalid JSON in lookup_keys parameter"}
+    else:
+        return {"error": "Must provide either record_id or lookup_keys"}
+
+
+# ========== Unified ID Lookup ==========
+
+@mcp.tool(description="Look up unified record ID from source record identifiers")
+def lookup_unified_id(
+    entity_name: str = Field(description="Name of the entity"),
+    data_source_id: str = Field(description="ID of the data source"),
+    data_source_object_id: str = Field(description="ID of the data source object"),
+    source_record_id: str = Field(description="ID of the source record"),
+) -> dict:
+    """
+    Find the unified profile ID from a source system's record identifiers.
+    Useful for identity resolution and cross-system lookups.
+    """
+    return direct_api.lookup_unified_id(
+        entity_name=entity_name,
+        data_source_id=data_source_id,
+        data_source_object_id=data_source_object_id,
+        source_record_id=source_record_id
+    )
+
+
+# ========== Ingestion API ==========
+
+@mcp.tool(description="Ingest records into Data Cloud (requires explicit approval - modifies data)")
+def ingest_records(
+    source_name: str = Field(description="Name of the data source"),
+    object_name: str = Field(description="Name of the object to ingest into"),
+    records: str = Field(description="JSON-encoded array of record objects to ingest"),
+) -> dict:
+    """
+    Insert records into Data Cloud for testing or data loading.
+    WARNING: This modifies data and requires explicit approval.
+    """
+    try:
+        record_list = json.loads(records)
+        return direct_api.ingest_records(source_name, object_name, record_list)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in records parameter"}
+
+
+@mcp.tool(description="Delete records from Data Cloud (requires explicit approval - modifies data)")
+def delete_records(
+    source_name: str = Field(description="Name of the data source"),
+    object_name: str = Field(description="Name of the object"),
+    record_ids: str = Field(description="JSON-encoded array of record IDs to delete"),
+) -> dict:
+    """
+    Delete records from Data Cloud.
+    WARNING: This modifies data and requires explicit approval.
+    """
+    try:
+        id_list = json.loads(record_ids)
+        return direct_api.delete_records(source_name, object_name, id_list)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in record_ids parameter"}
+
+
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
