@@ -214,22 +214,22 @@ class DirectAPISession:
 
 ---
 
-## Phase 2: Audience & Segmentation
+## Phase 2: Audience & Segmentation ✅
 
 | Tool | Status | Endpoint |
 |------|--------|----------|
-| `list_segments()` | ⬜ | `GET /ssot/segments` |
-| `get_segment(name)` | ⬜ | `GET /ssot/segments/{name}` |
-| `get_segment_members(name, limit)` | ⬜ | `GET /ssot/segments/{name}/members` |
-| `count_segment(name)` | ⬜ | `POST /ssot/segments/{name}/actions/count` |
-| `list_activations()` | ⬜ | `GET /ssot/activations` |
-| `get_activation(id)` | ⬜ | `GET /ssot/activations/{id}` |
-| `get_audience_records(activation_id)` | ⬜ | `GET /ssot/activations/{id}/audience-dmo-records` |
-| `list_activation_targets()` | ⬜ | `GET /ssot/activation-targets` |
-| `create_segment(...)` | ⬜ | `POST /ssot/segments` |
-| `update_segment(...)` | ⬜ | `PATCH /ssot/segments/{name}` |
-| `delete_segment(...)` | ⬜ | `DELETE /ssot/segments/{name}` |
-| `publish_segment(...)` | ⬜ | `POST /ssot/segments/{name}/actions/publish` |
+| `list_segments()` | ✅ | `GET /ssot/segments` |
+| `get_segment(name)` | ✅ | `GET /ssot/segments/{name}` |
+| `get_segment_members(name, limit)` | ✅ | `GET /ssot/segments/{name}/members` |
+| `count_segment(name)` | ✅ | `POST /ssot/segments/{name}/actions/count` |
+| `list_activations()` | ✅ | `GET /ssot/activations` |
+| `get_activation(id)` | ✅ | `GET /ssot/activations/{id}` |
+| `get_audience_records(activation_id)` | ✅ | `GET /ssot/activations/{id}/audience-dmo-records` |
+| `list_activation_targets()` | ✅ | `GET /ssot/activation-targets` |
+| `create_segment(...)` | ✅ | `POST /ssot/segments` |
+| `update_segment(...)` | ✅ | `PATCH /ssot/segments/{name}` |
+| `delete_segment(...)` | ✅ | `DELETE /ssot/segments/{name}` |
+| `publish_segment(...)` | ✅ | `POST /ssot/segments/{name}/actions/publish` |
 
 ---
 
