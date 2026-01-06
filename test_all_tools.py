@@ -192,7 +192,7 @@ def main():
     if segments_result and isinstance(segments_result, dict):
         segments_list = segments_result.get("segments", [])
         if segments_list:
-            test_segment = segments_list[0].get("name") or segments_list[0].get("segmentName")
+            test_segment = segments_list[0].get("apiName") or segments_list[0].get("name") or segments_list[0].get("segmentName")
 
     if test_segment:
         test_tool(results, "get_segment", get_segment, test_segment)
@@ -337,9 +337,10 @@ def main():
 
     test_dmo = None
     if dmo_result and isinstance(dmo_result, dict):
-        dmo_list = dmo_result.get("dataModelObjects", dmo_result.get("data", []))
+        # API returns "dataModelObject" (singular), not "dataModelObjects"
+        dmo_list = dmo_result.get("dataModelObject", dmo_result.get("dataModelObjects", []))
         if dmo_list:
-            test_dmo = dmo_list[0].get("name") or dmo_list[0].get("objectName")
+            test_dmo = dmo_list[0].get("label") or dmo_list[0].get("name") or dmo_list[0].get("id")
 
     if test_dmo:
         test_tool(results, "get_data_model_object", get_data_model_object, test_dmo)
@@ -375,9 +376,11 @@ def main():
 
     test_ci = None
     if ci_result and isinstance(ci_result, dict):
-        ci_list = ci_result.get("calculatedInsights", ci_result.get("data", []))
+        # API returns collection.items, not calculatedInsights directly
+        collection = ci_result.get("collection", {})
+        ci_list = collection.get("items", ci_result.get("calculatedInsights", []))
         if ci_list:
-            test_ci = ci_list[0].get("name") or ci_list[0].get("insightName")
+            test_ci = ci_list[0].get("apiName") or ci_list[0].get("name") or ci_list[0].get("insightName")
 
     if test_ci:
         test_tool(results, "query_calculated_insight", query_calculated_insight, test_ci)
@@ -399,9 +402,10 @@ def main():
 
     test_ruleset = None
     if ir_result and isinstance(ir_result, dict):
-        ir_list = ir_result.get("identityRulesets", ir_result.get("rulesets", ir_result.get("data", [])))
+        # API returns "identityResolutions", not "identityRulesets"
+        ir_list = ir_result.get("identityResolutions", ir_result.get("identityRulesets", []))
         if ir_list:
-            test_ruleset = ir_list[0].get("name") or ir_list[0].get("rulesetName")
+            test_ruleset = ir_list[0].get("id") or ir_list[0].get("label") or ir_list[0].get("name")
 
     if test_ruleset:
         test_tool(results, "get_identity_ruleset", get_identity_ruleset, test_ruleset)
