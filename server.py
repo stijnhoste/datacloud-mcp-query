@@ -9,6 +9,7 @@ from oauth import OAuthConfig, OAuthSession
 from connect_api_dc_sql import run_query
 from direct_api import DirectAPISession
 from query_validation import validate_sql_syntax, validate_query_with_metadata, format_query
+from connect_api_segments import ConnectAPIClient
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ mcp = FastMCP("Demo")
 sf_org: OAuthConfig = OAuthConfig.from_env()
 oauth_session: OAuthSession = OAuthSession(sf_org)
 direct_api: DirectAPISession = DirectAPISession(oauth_session)
+connect_api: ConnectAPIClient = ConnectAPIClient(oauth_session)
 
 # Non-auth configuration
 DEFAULT_LIST_TABLE_FILTER = os.getenv('DEFAULT_LIST_TABLE_FILTER', '%')
@@ -477,6 +479,142 @@ def format_sql(
     Useful for cleaning up messy queries.
     """
     return format_query(sql)
+
+
+# ========== Segments Tools (Phase 2) ==========
+
+@mcp.tool(description="List all segments in Data Cloud")
+def list_segments() -> dict:
+    """
+    Returns a list of all segments with their metadata.
+    """
+    return connect_api.list_segments()
+
+
+@mcp.tool(description="Get details for a specific segment")
+def get_segment(
+    segment_name: str = Field(description="Name of the segment"),
+) -> dict:
+    """
+    Returns detailed information about a segment including its definition.
+    """
+    return connect_api.get_segment(segment_name)
+
+
+@mcp.tool(description="Get members of a segment")
+def get_segment_members(
+    segment_name: str = Field(description="Name of the segment"),
+    limit: Optional[int] = Field(default=None, description="Maximum number of members to return"),
+    offset: Optional[int] = Field(default=None, description="Offset for pagination"),
+) -> dict:
+    """
+    Returns the list of member records in a segment.
+    """
+    return connect_api.get_segment_members(segment_name, limit=limit, offset=offset)
+
+
+@mcp.tool(description="Count members in a segment")
+def count_segment(
+    segment_name: str = Field(description="Name of the segment"),
+) -> dict:
+    """
+    Returns the count of members in a segment.
+    Useful for understanding segment size before retrieving members.
+    """
+    return connect_api.count_segment(segment_name)
+
+
+@mcp.tool(description="Create a new segment (requires approval - creates data)")
+def create_segment(
+    segment_definition: str = Field(description="JSON-encoded segment definition"),
+) -> dict:
+    """
+    Create a new segment in Data Cloud.
+    WARNING: This creates data and requires explicit approval.
+    """
+    try:
+        definition = json.loads(segment_definition)
+        return connect_api.create_segment(definition)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in segment_definition parameter"}
+
+
+@mcp.tool(description="Update an existing segment (requires approval - modifies data)")
+def update_segment(
+    segment_name: str = Field(description="Name of the segment to update"),
+    segment_updates: str = Field(description="JSON-encoded fields to update"),
+) -> dict:
+    """
+    Update an existing segment in Data Cloud.
+    WARNING: This modifies data and requires explicit approval.
+    """
+    try:
+        updates = json.loads(segment_updates)
+        return connect_api.update_segment(segment_name, updates)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in segment_updates parameter"}
+
+
+@mcp.tool(description="Delete a segment (requires approval - deletes data)")
+def delete_segment(
+    segment_name: str = Field(description="Name of the segment to delete"),
+) -> dict:
+    """
+    Delete a segment from Data Cloud.
+    WARNING: This deletes data and requires explicit approval.
+    """
+    return connect_api.delete_segment(segment_name)
+
+
+@mcp.tool(description="Publish a segment for activation (requires approval - modifies data)")
+def publish_segment(
+    segment_name: str = Field(description="Name of the segment to publish"),
+) -> dict:
+    """
+    Publish a segment to make it available for activation.
+    WARNING: This modifies data and requires explicit approval.
+    """
+    return connect_api.publish_segment(segment_name)
+
+
+# ========== Activations Tools (Phase 2) ==========
+
+@mcp.tool(description="List all activations in Data Cloud")
+def list_activations() -> dict:
+    """
+    Returns a list of all activations with their metadata.
+    """
+    return connect_api.list_activations()
+
+
+@mcp.tool(description="Get details for a specific activation")
+def get_activation(
+    activation_id: str = Field(description="ID of the activation"),
+) -> dict:
+    """
+    Returns detailed information about an activation.
+    """
+    return connect_api.get_activation(activation_id)
+
+
+@mcp.tool(description="Get audience DMO records for an activation")
+def get_audience_records(
+    activation_id: str = Field(description="ID of the activation"),
+    limit: Optional[int] = Field(default=None, description="Maximum number of records to return"),
+    offset: Optional[int] = Field(default=None, description="Offset for pagination"),
+) -> dict:
+    """
+    Returns audience records for an activation.
+    """
+    return connect_api.get_audience_records(activation_id, limit=limit, offset=offset)
+
+
+@mcp.tool(description="List all available activation targets")
+def list_activation_targets() -> dict:
+    """
+    Returns a list of available activation targets (e.g., marketing clouds, ad platforms).
+    """
+    return connect_api.list_activation_targets()
 
 
 if __name__ == "__main__":
