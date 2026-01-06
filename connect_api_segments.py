@@ -531,3 +531,126 @@ class ConnectAPIClient:
             dict: List of objects in the data space
         """
         return self._request('GET', f'/data-spaces/{space_name}/members')
+
+    # ========== ML Models API (Phase 5) ==========
+
+    def list_ml_models(self) -> dict:
+        """
+        List all machine learning models.
+
+        Returns:
+            dict: List of ML model metadata including names, types, and status
+        """
+        return self._request('GET', '/ml-models')
+
+    def get_ml_model(self, model_name: str) -> dict:
+        """
+        Get details for a specific ML model.
+
+        Args:
+            model_name: Name of the ML model
+
+        Returns:
+            dict: ML model details including configuration and metrics
+        """
+        return self._request('GET', f'/ml-models/{model_name}')
+
+    def get_prediction(
+        self,
+        model_name: str,
+        input_data: Optional[dict] = None
+    ) -> dict:
+        """
+        Get predictions from an ML model.
+
+        Args:
+            model_name: Name of the ML model
+            input_data: Input data for prediction (optional)
+
+        Returns:
+            dict: Prediction results
+        """
+        if input_data:
+            return self._request('POST', f'/ml-models/{model_name}/predictions', json_data=input_data)
+        return self._request('GET', f'/ml-models/{model_name}/predictions')
+
+    def list_model_artifacts(self) -> dict:
+        """
+        List all ML model artifacts.
+
+        Model artifacts contain trained model files and associated metadata.
+
+        Returns:
+            dict: List of model artifact metadata
+        """
+        return self._request('GET', '/ml-model-artifacts')
+
+    # ========== Document AI API (Phase 5) ==========
+
+    def list_document_ai_configs(self) -> dict:
+        """
+        List all Document AI configurations.
+
+        Document AI extracts structured data from documents like invoices,
+        contracts, and forms.
+
+        Returns:
+            dict: List of Document AI configuration metadata
+        """
+        return self._request('GET', '/document-ai-configurations')
+
+    def extract_document_data(
+        self,
+        config_name: str,
+        document_data: dict
+    ) -> dict:
+        """
+        Extract data from a document using Document AI.
+
+        Args:
+            config_name: Name of the Document AI configuration
+            document_data: Document content and metadata for extraction
+
+        Returns:
+            dict: Extracted structured data
+        """
+        return self._request(
+            'POST',
+            f'/document-ai-configurations/{config_name}/actions/extract-data',
+            json_data=document_data
+        )
+
+    # ========== Semantic Search API (Phase 5) ==========
+
+    def list_semantic_searches(self) -> dict:
+        """
+        List all semantic search configurations.
+
+        Semantic search enables natural language queries over your data
+        using vector embeddings.
+
+        Returns:
+            dict: List of semantic search metadata
+        """
+        return self._request('GET', '/semantic-searches')
+
+    def get_semantic_search(self, search_name: str) -> dict:
+        """
+        Get details for a specific semantic search configuration.
+
+        Args:
+            search_name: Name of the semantic search
+
+        Returns:
+            dict: Semantic search configuration details
+        """
+        return self._request('GET', f'/semantic-searches/{search_name}')
+
+    def get_semantic_search_config(self) -> dict:
+        """
+        Get the global semantic search configuration.
+
+        Returns:
+            dict: Global semantic search settings
+        """
+        return self._request('GET', '/semantic-search-config')
