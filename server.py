@@ -8,6 +8,7 @@ import os
 from oauth import OAuthConfig, OAuthSession
 from connect_api_dc_sql import run_query
 from direct_api import DirectAPISession
+from query_validation import validate_sql_syntax, validate_query_with_metadata, format_query
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
@@ -423,6 +424,59 @@ def delete_records(
         return direct_api.delete_records(source_name, object_name, id_list)
     except json.JSONDecodeError:
         return {"error": "Invalid JSON in record_ids parameter"}
+
+
+# ========== Query Assistance Tools ==========
+
+@mcp.tool(description="Validate SQL query syntax before execution. Catches errors early and provides helpful suggestions.")
+def validate_query(
+    sql: str = Field(description="The SQL query to validate"),
+    check_metadata: bool = Field(default=False, description="If true, also validates table/column names against metadata"),
+) -> dict:
+    """
+    Validate SQL query syntax and optionally check against metadata.
+
+    Returns:
+    - valid: bool - whether the query is valid
+    - error_type: str - type of error (if invalid)
+    - message: str - error description (if invalid)
+    - suggestion: str - suggested fix (if available)
+    - position: dict - line/column of error (if available)
+    """
+    # Basic syntax validation
+    result = validate_sql_syntax(sql)
+
+    if not result.get("valid") or not check_metadata:
+        return result
+
+    # If metadata check requested, get table list and validate
+    try:
+        tables = list_tables()
+        table_columns = {}
+
+        # Build column map for referenced tables
+        metadata_result = direct_api.get_metadata()
+        for entity in metadata_result.get('metadata', []):
+            entity_name = entity.get('name', '')
+            columns = [f.get('name', '') for f in entity.get('fields', [])]
+            table_columns[entity_name] = columns
+
+        return validate_query_with_metadata(sql, tables, table_columns)
+    except Exception as e:
+        logger.warning(f"Metadata validation failed: {e}")
+        # Return basic validation result if metadata fetch fails
+        return result
+
+
+@mcp.tool(description="Format a SQL query for better readability")
+def format_sql(
+    sql: str = Field(description="The SQL query to format"),
+) -> str:
+    """
+    Format SQL query with proper indentation and keyword casing.
+    Useful for cleaning up messy queries.
+    """
+    return format_query(sql)
 
 
 if __name__ == "__main__":
