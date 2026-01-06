@@ -130,6 +130,166 @@ def get_relationships(
     return entity.get("relationships", [])
 
 
+# ========== Discovery Tools ==========
+
+@mcp.tool(description="Comprehensive data exploration: schema, sample rows, row count, and column statistics. Useful for understanding table contents before querying.")
+def explore_table(
+    table: str = Field(description="The table name to explore"),
+    sample_size: int = Field(default=10, description="Number of sample rows to return"),
+) -> dict:
+    """
+    Returns comprehensive table exploration including:
+    - Schema with field types
+    - Random sample rows
+    - Total row count
+    - Column profiles (distinct values for strings, min/max/avg for numbers)
+    """
+    result = {
+        "table": table,
+        "schema": [],
+        "row_count": 0,
+        "sample": [],
+        "column_profiles": {}
+    }
+
+    # Get schema from metadata API
+    try:
+        metadata_result = direct_api.get_metadata(entity_name=table)
+        metadata_list = metadata_result.get('metadata', [])
+        if metadata_list:
+            entity = metadata_list[0]
+            result["schema"] = [
+                {
+                    "name": f.get("name"),
+                    "type": f.get("type"),
+                    "businessType": f.get("businessType")
+                }
+                for f in entity.get("fields", [])
+            ]
+    except Exception as e:
+        logger.warning(f"Failed to get metadata for {table}: {e}")
+
+    # Get row count
+    try:
+        count_sql = f'SELECT COUNT(*) FROM "{table}"'
+        count_result = run_query(oauth_session, count_sql)
+        count_data = count_result.get("data", [])
+        if count_data:
+            result["row_count"] = count_data[0][0]
+    except Exception as e:
+        logger.warning(f"Failed to get row count for {table}: {e}")
+
+    # Get sample rows (random sample using TABLESAMPLE or ORDER BY RANDOM)
+    try:
+        # Get column names first
+        columns = [f["name"] for f in result["schema"]] if result["schema"] else ["*"]
+        col_list = ", ".join([f'"{c}"' for c in columns[:20]])  # Limit columns
+        sample_sql = f'SELECT {col_list} FROM "{table}" ORDER BY RANDOM() LIMIT {sample_size}'
+        sample_result = run_query(oauth_session, sample_sql)
+        result["sample"] = sample_result.get("data", [])
+        result["sample_columns"] = [m.get("name") for m in sample_result.get("metadata", [])]
+    except Exception as e:
+        logger.warning(f"Failed to get sample for {table}: {e}")
+
+    # Get column profiles for first few columns
+    try:
+        for field in result["schema"][:10]:  # Limit to first 10 columns
+            field_name = field["name"]
+            field_type = field.get("type", "").upper()
+
+            profile = {"null_count": 0}
+
+            # Get null count
+            null_sql = f'SELECT COUNT(*) FROM "{table}" WHERE "{field_name}" IS NULL'
+            null_result = run_query(oauth_session, null_sql)
+            null_data = null_result.get("data", [])
+            if null_data:
+                profile["null_count"] = null_data[0][0]
+
+            # For string fields, get distinct values
+            if field_type in ("STRING", "TEXT", "VARCHAR"):
+                distinct_sql = f'SELECT DISTINCT "{field_name}" FROM "{table}" WHERE "{field_name}" IS NOT NULL LIMIT 20'
+                distinct_result = run_query(oauth_session, distinct_sql)
+                distinct_data = distinct_result.get("data", [])
+                profile["distinct_values"] = [row[0] for row in distinct_data]
+
+            # For numeric fields, get min/max/avg
+            elif field_type in ("NUMBER", "INTEGER", "DECIMAL", "DOUBLE", "FLOAT", "BIGINT"):
+                stats_sql = f'SELECT MIN("{field_name}"), MAX("{field_name}"), AVG("{field_name}") FROM "{table}"'
+                stats_result = run_query(oauth_session, stats_sql)
+                stats_data = stats_result.get("data", [])
+                if stats_data:
+                    profile["min"] = stats_data[0][0]
+                    profile["max"] = stats_data[0][1]
+                    profile["avg"] = stats_data[0][2]
+
+            result["column_profiles"][field_name] = profile
+
+    except Exception as e:
+        logger.warning(f"Failed to get column profiles for {table}: {e}")
+
+    return result
+
+
+@mcp.tool(description="Search for tables and columns by keyword. Useful when you don't know the exact table name.")
+def search_tables(
+    keyword: str = Field(description="Keyword to search for in table and column names"),
+) -> dict:
+    """
+    Searches across all metadata to find:
+    - Tables with names matching the keyword
+    - Tables with columns matching the keyword
+    """
+    keyword_lower = keyword.lower()
+
+    result = {
+        "matching_tables": [],
+        "tables_with_matching_columns": []
+    }
+
+    try:
+        # Get all metadata
+        metadata_result = direct_api.get_metadata()
+        metadata_list = metadata_result.get('metadata', [])
+
+        for entity in metadata_list:
+            entity_name = entity.get("name", "")
+            display_name = entity.get("displayName", "")
+
+            # Check if table name matches
+            if keyword_lower in entity_name.lower() or keyword_lower in display_name.lower():
+                result["matching_tables"].append({
+                    "name": entity_name,
+                    "displayName": display_name,
+                    "category": entity.get("category")
+                })
+
+            # Check if any column matches
+            matching_columns = []
+            for field in entity.get("fields", []):
+                field_name = field.get("name", "")
+                field_display = field.get("displayName", "")
+                if keyword_lower in field_name.lower() or keyword_lower in field_display.lower():
+                    matching_columns.append({
+                        "name": field_name,
+                        "displayName": field_display,
+                        "type": field.get("type")
+                    })
+
+            if matching_columns:
+                result["tables_with_matching_columns"].append({
+                    "table": entity_name,
+                    "tableDisplayName": display_name,
+                    "matchingColumns": matching_columns
+                })
+
+    except Exception as e:
+        logger.error(f"Failed to search tables: {e}")
+        result["error"] = str(e)
+
+    return result
+
+
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
