@@ -84,11 +84,47 @@ def _generate_pkce_pair() -> Tuple[str, str]:
 
 
 class OAuthSession:
+    TOKEN_CACHE_FILE = os.path.expanduser("~/.datacloud_mcp_token.json")
+
     def __init__(self, config: OAuthConfig):
         self.config = config
         self.token: str | None = None
         self.exp: datetime | None = None
         self.instance_url: str | None = None
+        self._load_cached_token()
+
+    def _load_cached_token(self):
+        """Load token from cache file if it exists and is not expired"""
+        import json
+        try:
+            if os.path.exists(self.TOKEN_CACHE_FILE):
+                with open(self.TOKEN_CACHE_FILE, 'r') as f:
+                    cache = json.load(f)
+                    exp = datetime.fromisoformat(cache['exp'])
+                    if datetime.now() < exp:
+                        self.token = cache['token']
+                        self.exp = exp
+                        self.instance_url = cache['instance_url']
+                        logger.info("Loaded cached token (valid until %s)", exp)
+                    else:
+                        logger.info("Cached token expired, will re-authenticate")
+        except Exception as e:
+            logger.warning("Failed to load cached token: %s", e)
+
+    def _save_token_to_cache(self):
+        """Save current token to cache file"""
+        import json
+        try:
+            cache = {
+                'token': self.token,
+                'exp': self.exp.isoformat(),
+                'instance_url': self.instance_url
+            }
+            with open(self.TOKEN_CACHE_FILE, 'w') as f:
+                json.dump(cache, f)
+            logger.info("Saved token to cache file")
+        except Exception as e:
+            logger.warning("Failed to save token to cache: %s", e)
 
     def _run_oauth_flow(self, scopes: list[str]):
         logger.info(f"Starting OAuth flow with scopes: {scopes}")
@@ -177,6 +213,7 @@ class OAuthSession:
             self.token = auth_info["access_token"]
             self.exp = datetime.now() + timedelta(minutes=110)
             self.instance_url = auth_info["instance_url"]
+            self._save_token_to_cache()
 
         return self.token
 
