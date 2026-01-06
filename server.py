@@ -35,6 +35,20 @@ class SFCLISession:
         return instance_url
 
 
+def _resolve_field_default(value):
+    """
+    Resolve Field() defaults when called directly (not through MCP).
+
+    When functions with Field() defaults are called directly (not via MCP),
+    the Field() returns a FieldInfo object instead of the actual default.
+    This helper extracts the actual default value.
+    """
+    from pydantic.fields import FieldInfo
+    if isinstance(value, FieldInfo):
+        return value.default
+    return value
+
+
 def _validate_identifier(name: str, identifier_type: str = "identifier") -> str:
     """
     Validate and sanitize SQL identifier to prevent SQL injection.
@@ -192,9 +206,9 @@ def get_metadata(
 ) -> dict:
     _ensure_session()
     return _connect_api.get_metadata(
-        entity_name=entity_name,
-        entity_type=entity_type,
-        entity_category=entity_category
+        entity_name=_resolve_field_default(entity_name),
+        entity_type=_resolve_field_default(entity_type),
+        entity_category=_resolve_field_default(entity_category)
     )
 
 

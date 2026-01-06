@@ -4,7 +4,9 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
-from oauth import OAuthSession, OAuthConfig
+# Note: This module uses duck-typing for the session object.
+# It expects any object with get_token() and get_instance_url() methods.
+# Works with both OAuthSession (original) and SFCLISession (this fork).
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
@@ -51,7 +53,7 @@ def _handle_error_response(response: requests.Response):
 
 
 def run_query(
-    oauth_session: OAuthSession,
+    oauth_session,  # Any object with get_token() and get_instance_url() methods
     sql: str,
     dataspace: str = "default",
     workload_name: str | None = "data-360-mcp-query-oss",
@@ -180,10 +182,28 @@ if __name__ == "__main__":
     # Set debug level for this module during testing
     logger.setLevel(logging.DEBUG)
 
-    sf_org: OAuthConfig = OAuthConfig.from_env()
-    oauth_session: OAuthSession = OAuthSession(sf_org)
+    # Use SF CLI authentication
+    from sf_cli_auth import SFCLIAuth
+    import os
 
-    result = run_query(OAuthSession(OAuthConfig.from_env(
-    )), "SELECT g::text || rpad(1::text,100) as a, g as b FROM generate_series(1, 40000) g ORDER BY b DESC")
+    class SimpleSFCLISession:
+        """Simple session adapter for standalone testing."""
+        def __init__(self, alias: str):
+            self.sf_auth = SFCLIAuth()
+            self.sf_auth.set_target_org(alias)
+
+        def get_token(self) -> str:
+            token, _ = self.sf_auth.get_access_token()
+            return token
+
+        def get_instance_url(self) -> str:
+            _, instance_url = self.sf_auth.get_access_token()
+            return instance_url
+
+    # Get org from environment or use default
+    org_alias = os.getenv('DC_DEFAULT_ORG', 'mca-next-sdo')
+    session = SimpleSFCLISession(org_alias)
+
+    result = run_query(session, "SELECT 1 as test_col")
     print(f"Query result: {len(result['data'])} rows returned")
     print(result)

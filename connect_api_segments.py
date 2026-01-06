@@ -13,7 +13,9 @@ from typing import Any, Optional
 
 import requests
 
-from oauth import OAuthSession
+# Note: This module uses duck-typing for the session object.
+# It expects any object with get_token() and get_instance_url() methods.
+# Works with both OAuthSession (original) and SFCLISession (this fork).
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,11 @@ API_VERSION = "63.0"
 class ConnectAPIClient:
     """Client for Data Cloud Connect APIs (segments, activations, etc.)."""
 
-    def __init__(self, oauth_session: OAuthSession):
+    def __init__(self, oauth_session):
+        """
+        Args:
+            oauth_session: Any object with get_token() and get_instance_url() methods.
+        """
         self.oauth_session = oauth_session
 
     def _get_base_url(self) -> str:
