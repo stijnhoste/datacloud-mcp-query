@@ -8,7 +8,7 @@ Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotc
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 66 |
+| **Tools** | 3 | 153 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 
@@ -31,11 +31,33 @@ python connect_api_dc_sql.py
 ## Architecture
 
 ```
-server.py                      # MCP server entry point - defines all 66 tools
-    ├── sf_cli_auth.py         # SF CLI org discovery and authentication
-    ├── connect_api_dc_sql.py  # Connect API client (query-sql endpoint)
-    ├── connect_api_segments.py # Connect API client (all other endpoints)
-    └── query_validation.py    # SQL validation with sqlparse
+server.py                      # Thin entry point - imports tools package and runs MCP
+├── tools/                     # Domain-specific tool modules (auto-registered)
+│   ├── __init__.py            # Imports all modules to register tools with mcp
+│   ├── base.py                # Shared mcp instance, session management, helpers
+│   ├── org.py                 # Org management (list_orgs, set_target_org)
+│   ├── query.py               # SQL query tools (query, list_tables, describe_table)
+│   ├── metadata.py            # Metadata discovery (describe_table_full, get_relationships)
+│   ├── segments.py            # Segment CRUD operations
+│   ├── activations.py         # Activation and target management
+│   ├── streams.py             # Data stream operations
+│   ├── transforms.py          # Data transform operations
+│   ├── connections.py         # Connection and connector management
+│   ├── dlo_dmo.py             # DLO and DMO operations
+│   ├── dataspaces.py          # Data space management
+│   ├── insights.py            # Calculated insights
+│   ├── graphs.py              # Data graph operations
+│   ├── identity.py            # Identity resolution
+│   ├── ml.py                  # ML models, Document AI, semantic search
+│   ├── admin.py               # Admin, limits, data actions, network routes
+│   └── profile.py             # Profile query tools
+├── clients/                   # API client implementations
+│   ├── __init__.py            # Package init
+│   ├── base.py                # Base HTTP client with request handling
+│   └── client.py              # Full ConnectAPIClient with all API methods
+├── sf_cli_auth.py             # SF CLI org discovery and authentication
+├── connect_api_dc_sql.py      # Connect API client (query-sql endpoint)
+└── query_validation.py        # SQL validation with sqlparse
 ```
 
 ### API Architecture
@@ -96,7 +118,7 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `DC_DEFAULT_ORG` | No | - | SF CLI org alias to use by default |
 | `DEFAULT_LIST_TABLE_FILTER` | No | `%` | SQL LIKE pattern for filtering tables |
 
-## MCP Tools (66 total)
+## MCP Tools (153 total)
 
 ### Org Management
 | Tool | Description |
@@ -268,12 +290,15 @@ Requires approval:
 
 ## File Reference
 
-| File | Purpose |
-|------|---------|
-| `server.py` | MCP server, all 66 tool definitions |
+| File/Directory | Purpose |
+|----------------|---------|
+| `server.py` | Thin MCP entry point (imports tools package) |
+| `tools/` | Domain-specific tool modules (153 tools total) |
+| `tools/base.py` | Shared mcp instance, session management |
+| `clients/` | API client implementations |
+| `clients/client.py` | Full ConnectAPIClient with all API methods |
 | `sf_cli_auth.py` | SF CLI org discovery and authentication |
 | `connect_api_dc_sql.py` | Connect API client for SQL queries |
-| `connect_api_segments.py` | Connect API client for all other endpoints |
 | `query_validation.py` | SQL validation with sqlparse |
 | `requirements.txt` | Python dependencies |
 | `api-reference/API_REFERENCE.md` | Consolidated API endpoint reference |
