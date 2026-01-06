@@ -100,6 +100,13 @@ class OAuthSession:
             if os.path.exists(self.TOKEN_CACHE_FILE):
                 with open(self.TOKEN_CACHE_FILE, 'r') as f:
                     cache = json.load(f)
+
+                    # Check if client_id matches (detect config changes)
+                    cached_client_id = cache.get('client_id')
+                    if cached_client_id and cached_client_id != self.config.client_id:
+                        logger.info("Client ID changed, cached token invalid")
+                        return
+
                     exp = datetime.fromisoformat(cache['exp'])
                     if datetime.now() < exp:
                         self.token = cache['token']
@@ -118,10 +125,12 @@ class OAuthSession:
             cache = {
                 'token': self.token,
                 'exp': self.exp.isoformat(),
-                'instance_url': self.instance_url
+                'instance_url': self.instance_url,
+                'client_id': self.config.client_id
             }
             with open(self.TOKEN_CACHE_FILE, 'w') as f:
                 json.dump(cache, f)
+            os.chmod(self.TOKEN_CACHE_FILE, 0o600)
             logger.info("Saved token to cache file")
         except Exception as e:
             logger.warning("Failed to save token to cache: %s", e)
