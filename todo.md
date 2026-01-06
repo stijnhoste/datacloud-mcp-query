@@ -269,19 +269,19 @@ class DirectAPISession:
 
 ---
 
-## Phase 5: ML & AI
+## Phase 5: ML & AI ✅
 
 | Tool | Status | Endpoint |
 |------|--------|----------|
-| `list_ml_models()` | ⬜ | `GET /ssot/ml-models` |
-| `get_ml_model(name)` | ⬜ | `GET /ssot/ml-models/{name}` |
-| `get_prediction(model, input)` | ⬜ | `GET /ssot/ml-models/{name}/predictions` |
-| `list_model_artifacts()` | ⬜ | `GET /ssot/ml-model-artifacts` |
-| `list_document_ai_configs()` | ⬜ | `GET /ssot/document-ai-configurations` |
-| `extract_document_data(config, doc)` | ⬜ | `POST /ssot/document-ai-configurations/{name}/actions/extract-data` |
-| `list_semantic_searches()` | ⬜ | `GET /ssot/semantic-searches` |
-| `get_semantic_search(name)` | ⬜ | `GET /ssot/semantic-searches/{name}` |
-| `get_semantic_search_config()` | ⬜ | `GET /ssot/semantic-search-config` |
+| `list_ml_models()` | ✅ | `GET /ssot/ml-models` |
+| `get_ml_model(name)` | ✅ | `GET /ssot/ml-models/{name}` |
+| `get_prediction(model, input)` | ✅ | `GET /ssot/ml-models/{name}/predictions` |
+| `list_model_artifacts()` | ✅ | `GET /ssot/ml-model-artifacts` |
+| `list_document_ai_configs()` | ✅ | `GET /ssot/document-ai-configurations` |
+| `extract_document_data(config, doc)` | ✅ | `POST /ssot/document-ai-configurations/{name}/actions/extract-data` |
+| `list_semantic_searches()` | ✅ | `GET /ssot/semantic-searches` |
+| `get_semantic_search(name)` | ✅ | `GET /ssot/semantic-searches/{name}` |
+| `get_semantic_search_config()` | ✅ | `GET /ssot/semantic-search-config` |
 
 ---
 

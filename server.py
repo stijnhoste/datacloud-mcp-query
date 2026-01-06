@@ -864,6 +864,110 @@ def get_data_space_members(
     return connect_api.get_data_space_members(space_name)
 
 
+# ========== ML Models Tools (Phase 5) ==========
+
+@mcp.tool(description="List all machine learning models in Data Cloud")
+def list_ml_models() -> dict:
+    """
+    Returns a list of all ML models with their metadata.
+    Includes propensity models, recommendation models, and custom models.
+    """
+    return connect_api.list_ml_models()
+
+
+@mcp.tool(description="Get details for a specific ML model")
+def get_ml_model(
+    model_name: str = Field(description="Name of the ML model"),
+) -> dict:
+    """
+    Returns detailed information about an ML model including its configuration and metrics.
+    """
+    return connect_api.get_ml_model(model_name)
+
+
+@mcp.tool(description="Get predictions from an ML model")
+def get_prediction(
+    model_name: str = Field(description="Name of the ML model"),
+    input_data: Optional[str] = Field(default=None, description="JSON-encoded input data for prediction"),
+) -> dict:
+    """
+    Get predictions from a trained ML model.
+    Pass input_data to get predictions for specific records.
+    """
+    if input_data:
+        try:
+            data = json.loads(input_data)
+            return connect_api.get_prediction(model_name, data)
+        except json.JSONDecodeError:
+            return {"error": "Invalid JSON in input_data parameter"}
+    return connect_api.get_prediction(model_name)
+
+
+@mcp.tool(description="List all ML model artifacts")
+def list_model_artifacts() -> dict:
+    """
+    Returns a list of all ML model artifacts.
+    Artifacts contain trained model files and metadata.
+    """
+    return connect_api.list_model_artifacts()
+
+
+# ========== Document AI Tools (Phase 5) ==========
+
+@mcp.tool(description="List all Document AI configurations")
+def list_document_ai_configs() -> dict:
+    """
+    Returns a list of all Document AI configurations.
+    Document AI extracts structured data from documents.
+    """
+    return connect_api.list_document_ai_configs()
+
+
+@mcp.tool(description="Extract data from a document using Document AI (requires approval)")
+def extract_document_data(
+    config_name: str = Field(description="Name of the Document AI configuration"),
+    document_data: str = Field(description="JSON-encoded document content and metadata"),
+) -> dict:
+    """
+    Extract structured data from a document.
+    WARNING: This processes data and requires explicit approval.
+    """
+    try:
+        data = json.loads(document_data)
+        return connect_api.extract_document_data(config_name, data)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in document_data parameter"}
+
+
+# ========== Semantic Search Tools (Phase 5) ==========
+
+@mcp.tool(description="List all semantic search configurations")
+def list_semantic_searches() -> dict:
+    """
+    Returns a list of all semantic search configurations.
+    Semantic search enables natural language queries using vector embeddings.
+    """
+    return connect_api.list_semantic_searches()
+
+
+@mcp.tool(description="Get details for a specific semantic search")
+def get_semantic_search(
+    search_name: str = Field(description="Name of the semantic search"),
+) -> dict:
+    """
+    Returns detailed information about a semantic search configuration.
+    """
+    return connect_api.get_semantic_search(search_name)
+
+
+@mcp.tool(description="Get global semantic search configuration")
+def get_semantic_search_config() -> dict:
+    """
+    Returns the global semantic search settings for the Data Cloud instance.
+    """
+    return connect_api.get_semantic_search_config()
+
+
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
