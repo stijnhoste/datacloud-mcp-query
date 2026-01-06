@@ -4,13 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MCP (Model Context Protocol) server that connects AI assistants (Cursor, Claude Code) to Salesforce Data Cloud (Data 360). It provides 68 tools for SQL querying, metadata exploration, segments, activations, data pipelines, schema management, ML/AI, and administration.
+Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query). This MCP server connects AI assistants (Cursor, Claude Code) to Salesforce Data Cloud.
+
+| Aspect | Original | This Fork |
+|--------|----------|-----------|
+| **Tools** | 3 | 66 |
+| **Auth** | Connected App OAuth | SF CLI (no setup required) |
+| **APIs** | Connect API (queries only) | Connect API (full coverage) |
 
 ## Commands
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
+
+# Authenticate with SF CLI
+sf org login web --alias my-dc-org
 
 # Run the MCP server (typically launched by Cursor/Claude Code, not manually)
 python server.py
@@ -22,58 +31,57 @@ python connect_api_dc_sql.py
 ## Architecture
 
 ```
-server.py                      # MCP server entry point - defines all 68 tools
-    ├── oauth.py               # OAuth2 + PKCE flow, token caching, SF CLI integration
+server.py                      # MCP server entry point - defines all 66 tools
     ├── sf_cli_auth.py         # SF CLI org discovery and authentication
     ├── connect_api_dc_sql.py  # Connect API client (query-sql endpoint)
     ├── connect_api_segments.py # Connect API client (all other endpoints)
-    ├── direct_api.py          # Direct API client (ingestion only - requires CDP scopes)
     └── query_validation.py    # SQL validation with sqlparse
 ```
 
 ### API Architecture
 
-Almost all tools use Connect API which works with SF CLI authentication:
+All tools use the Connect API which works with SF CLI authentication:
 
 ```
-Connect APIs (/services/data/v63.0/ssot/*) - Works with SF CLI auth
-├── query-sql              → query()
-├── metadata               → get_metadata(), describe_table_full(), get_relationships()
-├── calculated-insights/*  → list_calculated_insights(), query_calculated_insight()
-├── data-graphs/*          → list_data_graphs(), query_data_graph()
-├── universalIdLookup/*    → lookup_unified_id()
-├── profile/*              → Profile queries
-├── segments/*             → list_segments(), get_segment(), create_segment(), etc.
-├── activations/*          → list_activations(), get_activation(), etc.
-├── data-streams/*         → list_data_streams(), run_data_stream(), etc.
-├── data-transforms/*      → list_data_transforms(), run_data_transform(), etc.
-├── connections/*          → list_connections(), preview_connection(), etc.
-├── data-lake-objects/*    → list_data_lake_objects(), create_data_lake_object(), etc.
-├── data-model-objects/*   → list_data_model_objects(), get_dmo_mappings(), etc.
-├── data-spaces/*          → list_data_spaces(), get_data_space_members(), etc.
-├── machine-learning/*     → list_ml_models(), get_prediction(), etc.
-├── search-index/*         → list_semantic_searches(), get_semantic_search_config(), etc.
-├── identity-resolutions/* → list_identity_rulesets(), run_identity_resolution(), etc.
-└── limits                 → get_limits()
-
-Direct APIs (/api/v1/*) - Requires Connected App with CDP scopes
-└── ingest/*               → ingest_records(), delete_records()
+Connect API (/services/data/v63.0/ssot/*)
+├── query-sql/*              → query()
+├── metadata                 → get_metadata(), describe_table_full()
+│
+├── segments/*               → list_segments(), create_segment(), etc.
+├── activations/*            → list_activations(), get_activation(), etc.
+│
+├── data-streams/*           → list_data_streams(), run_data_stream()
+├── data-transforms/*        → list_data_transforms(), run_data_transform()
+├── connections/*            → list_connections(), preview_connection()
+│
+├── data-lake-objects/*      → list_data_lake_objects(), create_data_lake_object()
+├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
+├── data-spaces/*            → list_data_spaces(), get_data_space_members()
+│
+├── calculated-insights/*    → list_calculated_insights(), query_calculated_insight()
+├── data-graphs/*            → list_data_graphs(), query_data_graph()
+├── identity-resolutions/*   → list_identity_rulesets(), run_identity_resolution()
+├── universalIdLookup/*      → lookup_unified_id()
+│
+├── machine-learning/*       → list_ml_models(), get_prediction()
+├── document-processing/*    → list_document_ai_configs()
+├── search-index/*           → list_semantic_searches()
+│
+├── data-actions/*           → list_data_actions()
+├── data-action-targets/*    → list_data_action_targets()
+│
+└── /services/data/v63.0/limits → get_limits()
 ```
 
 See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 
 ### Key Flows
 
-**Authentication (oauth.py)**:
-- `OAuthSession.ensure_access()` checks cached token first, then runs browser-based OAuth flow
-- Tokens expire after 110 minutes and are cached to `~/.datacloud_mcp_token.json`
-- Token cache includes `client_id` to detect config changes
-- File permissions set to 0600 for security
-
-**2-Step Auth for Direct APIs (direct_api.py)**:
-1. OAuth to Salesforce Platform → returns `access_token`, `instance_url`
-2. Token exchange POST to `{instance_url}/services/a360/token` → returns `tenant_token`, `tenant_url`
-3. Direct API calls use `tenant_url` (different from Salesforce instance URL)
+**Authentication (sf_cli_auth.py)**:
+- Uses SF CLI's secure token storage (`sf org display`)
+- No client secrets or Connected App setup required
+- Multi-org support via `list_orgs()`, `set_target_org(alias)`
+- Environment variable `DC_DEFAULT_ORG` for default org
 
 **Query Execution (connect_api_dc_sql.py)**:
 - Submits SQL to `/services/data/v63.0/ssot/query-sql`
@@ -83,88 +91,51 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 
 ## Environment Variables
 
-**For SF CLI Auth (recommended - no Connected App needed):**
-No environment variables required! The server uses orgs authenticated via `sf org login web`.
-Use `list_orgs()` and `set_target_org(alias)` to select which org to query.
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DC_DEFAULT_ORG` | No | - | SF CLI org alias to use by default |
+| `DEFAULT_LIST_TABLE_FILTER` | No | `%` | SQL LIKE pattern for filtering tables |
 
-**For Custom Connected App (only needed for data ingestion):**
-- `SF_CLIENT_ID` - Salesforce connected app client ID
-- `SF_CLIENT_SECRET` - Salesforce connected app client secret
-- `SF_LOGIN_URL` - Salesforce login URL (default: `login.salesforce.com`)
-- `SF_CALLBACK_URL` - OAuth callback URL (default: `http://localhost:55556/Callback`)
+## MCP Tools (66 total)
 
-**Other Options:**
-- `DEFAULT_LIST_TABLE_FILTER` - SQL LIKE pattern for filtering tables (default: `%`)
+### Org Management
+| Tool | Description |
+|------|-------------|
+| `list_orgs()` | List all SF CLI authenticated orgs |
+| `set_target_org(alias)` | Switch to a different org |
+| `get_target_org()` | Get currently selected org |
 
-### Authentication Modes
-
-| Mode | Setup | Features | Use Case |
-|------|-------|----------|----------|
-| **SF CLI** | `sf org login web` | 66/68 tools | Most users |
-| **Connected App** | Create app with CDP scopes | All 68 tools | Data ingestion |
-
-SF CLI auth works because most Data Cloud APIs use Connect API endpoints which only need standard Salesforce API scopes. Only the ingestion APIs (`ingest_records`, `delete_records`) require a Connected App with CDP scopes.
-
-## MCP Tools (68 total)
-
-### Core Query Tools
+### Query & SQL
 | Tool | Description |
 |------|-------------|
 | `query(sql)` | Execute PostgreSQL-dialect SQL against Data Cloud |
-| `validate_query(sql, check_metadata)` | Validate SQL syntax before execution |
+| `validate_query(sql)` | Validate SQL syntax before execution |
 | `format_sql(sql)` | Format SQL for readability |
 
-### Schema Discovery Tools
+### Schema Discovery
 | Tool | Description |
 |------|-------------|
 | `list_tables()` | List tables matching `DEFAULT_LIST_TABLE_FILTER` |
-| `describe_table(table)` | Get column names for a table (pg_catalog) |
-| `describe_table_full(table)` | Get detailed schema with field types (Direct API) |
+| `describe_table(table)` | Get column names for a table |
+| `describe_table_full(table)` | Get detailed schema with field types |
 | `get_metadata(entity_name, entity_type, entity_category)` | Get rich metadata |
 | `get_relationships(entity_name)` | Get entity relationships for JOINs |
-
-### Data Exploration Tools
-| Tool | Description |
-|------|-------------|
 | `explore_table(table, sample_size)` | Schema + samples + column profiles |
 | `search_tables(keyword)` | Search tables/columns by keyword |
 
-### Calculated Insights Tools
-| Tool | Description |
-|------|-------------|
-| `list_calculated_insights()` | List available calculated insights |
-| `query_calculated_insight(...)` | Query pre-aggregated metrics |
-
-### Data Graph Tools
-| Tool | Description |
-|------|-------------|
-| `list_data_graphs()` | List available data graphs |
-| `query_data_graph(graph_name, record_id, lookup_keys)` | Query unified profiles |
-
-### Identity Tools
-| Tool | Description |
-|------|-------------|
-| `lookup_unified_id(...)` | Look up unified IDs from source records |
-
-### Data Modification Tools
-| Tool | Description |
-|------|-------------|
-| `ingest_records(source_name, object_name, records)` | Insert records (requires approval) |
-| `delete_records(source_name, object_name, record_ids)` | Delete records (requires approval) |
-
-### Segments Tools
+### Segments
 | Tool | Description |
 |------|-------------|
 | `list_segments()` | List all segments |
 | `get_segment(segment_name)` | Get segment details |
 | `get_segment_members(segment_name, limit, offset)` | Get segment members |
 | `count_segment(segment_name)` | Count segment members |
-| `create_segment(segment_definition)` | Create segment (requires approval) |
-| `update_segment(segment_name, updates)` | Update segment (requires approval) |
-| `delete_segment(segment_name)` | Delete segment (requires approval) |
-| `publish_segment(segment_name)` | Publish segment (requires approval) |
+| `create_segment(segment_definition)` | Create segment |
+| `update_segment(segment_name, updates)` | Update segment |
+| `delete_segment(segment_name)` | Delete segment |
+| `publish_segment(segment_name)` | Publish segment for activation |
 
-### Activations Tools
+### Activations
 | Tool | Description |
 |------|-------------|
 | `list_activations()` | List all activations |
@@ -172,22 +143,22 @@ SF CLI auth works because most Data Cloud APIs use Connect API endpoints which o
 | `get_audience_records(activation_id, limit, offset)` | Get audience DMO records |
 | `list_activation_targets()` | List activation targets |
 
-### Data Streams Tools
+### Data Streams
 | Tool | Description |
 |------|-------------|
 | `list_data_streams()` | List all data streams |
 | `get_data_stream(stream_name)` | Get data stream details |
-| `run_data_stream(stream_names)` | Run data streams (requires approval) |
+| `run_data_stream(stream_names)` | Run data streams |
 
-### Data Transforms Tools
+### Data Transforms
 | Tool | Description |
 |------|-------------|
 | `list_data_transforms()` | List all data transforms |
 | `get_data_transform(transform_name)` | Get transform details |
 | `get_transform_run_history(transform_name)` | Get transform run history |
-| `run_data_transform(transform_name)` | Run transform (requires approval) |
+| `run_data_transform(transform_name)` | Run transform |
 
-### Connections Tools
+### Connections
 | Tool | Description |
 |------|-------------|
 | `list_connections()` | List all connections |
@@ -196,64 +167,73 @@ SF CLI auth works because most Data Cloud APIs use Connect API endpoints which o
 | `preview_connection(connection_name, object_name, limit)` | Preview connection data |
 | `list_connectors()` | List available connector types |
 
-### Data Lake Objects Tools
+### Data Lake Objects (DLOs)
 | Tool | Description |
 |------|-------------|
 | `list_data_lake_objects()` | List all DLOs (raw ingested data) |
 | `get_data_lake_object(object_name)` | Get DLO details |
-| `create_data_lake_object(definition)` | Create DLO (requires approval) |
+| `create_data_lake_object(definition)` | Create DLO |
 
-### Data Model Objects Tools
+### Data Model Objects (DMOs)
 | Tool | Description |
 |------|-------------|
 | `list_data_model_objects()` | List all DMOs (canonical entities) |
 | `get_data_model_object(object_name)` | Get DMO details |
 | `get_dmo_mappings(object_name)` | Get field mappings |
-| `create_data_model_object(definition)` | Create DMO (requires approval) |
+| `create_data_model_object(definition)` | Create DMO |
 
-### Data Spaces Tools
+### Data Spaces
 | Tool | Description |
 |------|-------------|
 | `list_data_spaces()` | List all data spaces |
 | `get_data_space(space_name)` | Get data space details |
 | `get_data_space_members(space_name)` | Get objects in data space |
 
-### ML Models Tools
+### Calculated Insights
+| Tool | Description |
+|------|-------------|
+| `list_calculated_insights()` | List available calculated insights |
+| `query_calculated_insight(...)` | Query pre-aggregated metrics |
+
+### Data Graphs
+| Tool | Description |
+|------|-------------|
+| `list_data_graphs()` | List available data graphs |
+| `query_data_graph(graph_name, record_id, lookup_keys)` | Query unified profiles |
+
+### Identity Resolution
+| Tool | Description |
+|------|-------------|
+| `lookup_unified_id(...)` | Look up unified IDs from source records |
+| `list_identity_rulesets()` | List identity resolution rulesets |
+| `get_identity_ruleset(ruleset_name)` | Get ruleset details |
+| `run_identity_resolution(ruleset_name)` | Run identity resolution |
+
+### AI & ML
 | Tool | Description |
 |------|-------------|
 | `list_ml_models()` | List all ML models |
 | `get_ml_model(model_name)` | Get ML model details |
 | `get_prediction(model_name, input_data)` | Get predictions |
 | `list_model_artifacts()` | List model artifacts |
-
-### Document AI Tools
-| Tool | Description |
-|------|-------------|
 | `list_document_ai_configs()` | List Document AI configurations |
-| `extract_document_data(config_name, document_data)` | Extract data (requires approval) |
-
-### Semantic Search Tools
-| Tool | Description |
-|------|-------------|
-| `list_semantic_searches()` | List semantic search configurations |
+| `extract_document_data(config_name, document_data)` | Extract document data |
+| `list_semantic_searches()` | List semantic search indexes |
 | `get_semantic_search(search_name)` | Get semantic search details |
 | `get_semantic_search_config()` | Get global search config |
 
-### Identity Resolution Tools
+### Data Actions
 | Tool | Description |
 |------|-------------|
-| `list_identity_rulesets()` | List identity resolution rulesets |
-| `get_identity_ruleset(ruleset_name)` | Get ruleset details |
-| `run_identity_resolution(ruleset_name)` | Run identity resolution (requires approval) |
+| `list_data_actions()` | List event-driven automation rules |
+| `list_data_action_targets()` | List webhook/external targets |
 
-### Admin Tools
+### Admin & Monitoring
 | Tool | Description |
 |------|-------------|
 | `get_limits()` | Get API limits and usage |
-| `list_data_actions()` | List data actions |
-| `list_data_action_targets()` | List data action targets |
 | `list_private_network_routes()` | List private network routes |
-| `get_data_kit_status(component_id)` | Get data kit component status |
+| `get_data_kit_status(component_id)` | Get data kit deployment status |
 
 ## Agentic Workflow Tips
 
@@ -270,7 +250,6 @@ Requires approval:
 - `query_calculated_insight`, `query_data_graph` - Queries data
 - `create_*`, `update_*`, `delete_*` - Modifies data
 - `run_*` - Executes pipelines
-- `ingest_records`, `delete_records` - Modifies data
 - `extract_document_data`, `get_prediction` - Processes data
 
 ### Recommended Workflow
@@ -291,13 +270,10 @@ Requires approval:
 
 | File | Purpose |
 |------|---------|
-| `server.py` | MCP server, all 68 tool definitions |
-| `oauth.py` | OAuth2 + PKCE authentication, token caching, SF CLI integration |
+| `server.py` | MCP server, all 66 tool definitions |
 | `sf_cli_auth.py` | SF CLI org discovery and authentication |
 | `connect_api_dc_sql.py` | Connect API client for SQL queries |
 | `connect_api_segments.py` | Connect API client for all other endpoints |
-| `direct_api.py` | Direct API client (ingestion only - requires CDP scopes) |
 | `query_validation.py` | SQL validation with sqlparse |
 | `requirements.txt` | Python dependencies |
 | `api-reference/API_REFERENCE.md` | Consolidated API endpoint reference |
-| `api-reference/*.json` | Postman collections for API reference |
