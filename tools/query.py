@@ -81,3 +81,35 @@ def format_sql(
 ) -> str:
     """Format SQL query with proper indentation."""
     return format_query(sql)
+
+
+@mcp.tool(description="Cancel a running SQL query")
+def cancel_sql_query(
+    query_id: str = Field(description="The query ID from query submission response"),
+) -> dict:
+    """Cancel a long-running SQL query."""
+    ensure_session()
+    return get_connect_api().cancel_sql_query(query_id)
+
+
+@mcp.tool(description="Execute a query using the V2 API")
+def query_v2(
+    query_definition: str = Field(description="JSON query definition object"),
+) -> dict:
+    """Execute a query using the V2 query API format."""
+    import json
+    ensure_session()
+    try:
+        definition = json.loads(query_definition)
+    except json.JSONDecodeError as e:
+        return {"error": f"Invalid JSON: {e}"}
+    return get_connect_api().query_v2(definition)
+
+
+@mcp.tool(description="Get next batch of V2 query results")
+def get_query_batch_v2(
+    batch_id: str = Field(description="The nextBatchId from a previous V2 query response"),
+) -> dict:
+    """Retrieve the next batch of results from a V2 query."""
+    ensure_session()
+    return get_connect_api().get_query_batch_v2(batch_id)

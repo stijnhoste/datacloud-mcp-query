@@ -1,12 +1,12 @@
 # Data Cloud MCP Server (Enhanced Fork)
 
-> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **153 tools**, SF CLI authentication, and full Connect API coverage.
+> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **156 tools**, SF CLI authentication, and full Connect API coverage.
 
 ## What's Different from Upstream
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 153 |
+| **Tools** | 3 | 156 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 | **Setup** | Create Connected App | Just `sf org login web` |
@@ -103,7 +103,7 @@ set_target_org(alias) # Switch to a specific org
 get_target_org()      # See currently selected org
 ```
 
-## Available Tools (153 total)
+## Available Tools (156 total)
 
 ### Org Management
 | Tool | Description |

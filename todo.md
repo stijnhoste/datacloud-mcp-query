@@ -26,6 +26,9 @@
 | `describe_table(table)` | ✅ | SQL query |
 | `validate_query(sql)` | ✅ | Local (sqlparse) |
 | `format_sql(sql)` | ✅ | Local (sqlparse) |
+| `cancel_sql_query(query_id)` | ✅ | `DELETE /ssot/query-sql/:queryId` |
+| `query_v2(definition)` | ✅ | `POST /ssot/queryv2` |
+| `get_query_batch_v2(batch_id)` | ✅ | `GET /ssot/queryv2/:batchId` |
 
 ---
 
@@ -324,7 +327,7 @@
 | 18 | Data Actions | ✅ 100% |
 | 19 | Admin & Monitoring | ✅ 100% |
 
-**Total: 153 tools - Full Connect API Coverage ✅**
+**Total: 156 tools - Full Connect API Coverage ✅**
 
 ---
 

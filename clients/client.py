@@ -50,6 +50,44 @@ class ConnectAPIClient(BaseClient):
         """
         return super()._request(method, endpoint, params, json_body=json_data)
 
+    # ========== Query API ==========
+
+    def cancel_sql_query(self, query_id: str) -> dict:
+        """
+        Cancel a running SQL query.
+
+        Args:
+            query_id: The ID of the query to cancel (from query submission response)
+
+        Returns:
+            dict: Cancellation result
+        """
+        return self._request('DELETE', f'/query-sql/{query_id}')
+
+    def query_v2(self, query_definition: dict) -> dict:
+        """
+        Execute a query using the V2 API.
+
+        Args:
+            query_definition: Query definition object
+
+        Returns:
+            dict: Query results with nextBatchId for pagination
+        """
+        return self._request('POST', '/queryv2', json_data=query_definition)
+
+    def get_query_batch_v2(self, batch_id: str) -> dict:
+        """
+        Get the next batch of results from a V2 query.
+
+        Args:
+            batch_id: The nextBatchId from a previous V2 query response
+
+        Returns:
+            dict: Next batch of query results
+        """
+        return self._request('GET', f'/queryv2/{batch_id}')
+
     # ========== Segments API ==========
 
     def list_segments(self) -> dict:

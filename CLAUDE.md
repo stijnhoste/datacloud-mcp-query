@@ -8,7 +8,7 @@ Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotc
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 153 |
+| **Tools** | 3 | 156 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 
@@ -118,7 +118,7 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `DC_DEFAULT_ORG` | No | - | SF CLI org alias to use by default |
 | `DEFAULT_LIST_TABLE_FILTER` | No | `%` | SQL LIKE pattern for filtering tables |
 
-## MCP Tools (153 total)
+## MCP Tools (156 total)
 
 ### Org Management
 | Tool | Description |
@@ -293,7 +293,7 @@ Requires approval:
 | File/Directory | Purpose |
 |----------------|---------|
 | `server.py` | Thin MCP entry point (imports tools package) |
-| `tools/` | Domain-specific tool modules (153 tools total) |
+| `tools/` | Domain-specific tool modules (156 tools total) |
 | `tools/base.py` | Shared mcp instance, session management |
 | `clients/` | API client implementations |
 | `clients/client.py` | Full ConnectAPIClient with all API methods |
