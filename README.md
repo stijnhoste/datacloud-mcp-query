@@ -8,7 +8,7 @@
 |--------|----------|-----------|
 | **Tools** | 4 | 66 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
-| **APIs** | Connect + Direct | Connect API only |
+| **APIs** | Connect API (queries only) | Connect API (full coverage) |
 | **Setup** | Create Connected App | Just `sf org login web` |
 
 ## Features
