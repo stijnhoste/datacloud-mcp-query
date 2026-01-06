@@ -19,9 +19,10 @@
 - **Data Pipelines** - Work with data streams, transforms, and connections
 - **Calculated Insights** - Query pre-aggregated metrics
 - **Data Graphs** - Traverse unified customer profiles
-- **ML Models** - List models and get predictions
+- **AI & ML** - ML models, Document AI, and semantic search
 - **Identity Resolution** - Manage rulesets and lookup unified IDs
-- **Admin Tools** - Monitor limits, data actions, and more
+- **Data Actions** - Event-driven automation and webhooks
+- **Admin & Monitoring** - API limits, network routes, deployment status
 
 ## Quick Start
 
@@ -215,35 +216,31 @@ get_target_org()      # See currently selected org
 | `get_identity_ruleset(name)` | Get ruleset details |
 | `run_identity_resolution(name)` | Run identity resolution |
 
-### ML Models
+### AI & ML
 | Tool | Description |
 |------|-------------|
 | `list_ml_models()` | List all ML models |
 | `get_ml_model(name)` | Get model details |
 | `get_prediction(model, data)` | Get predictions |
 | `list_model_artifacts()` | List model artifacts |
-
-### Document AI
-| Tool | Description |
-|------|-------------|
 | `list_document_ai_configs()` | List Document AI configs |
 | `extract_document_data(...)` | Extract document data |
+| `list_semantic_searches()` | List semantic search indexes |
+| `get_semantic_search(name)` | Get search index details |
+| `get_semantic_search_config()` | Get global search config |
 
-### Semantic Search
+### Data Actions
 | Tool | Description |
 |------|-------------|
-| `list_semantic_searches()` | List semantic searches |
-| `get_semantic_search(name)` | Get search details |
-| `get_semantic_search_config()` | Get global config |
+| `list_data_actions()` | List event-driven automation rules |
+| `list_data_action_targets()` | List webhook/external targets |
 
-### Admin
+### Admin & Monitoring
 | Tool | Description |
 |------|-------------|
 | `get_limits()` | Get API limits and usage |
-| `list_data_actions()` | List data actions |
-| `list_data_action_targets()` | List action targets |
 | `list_private_network_routes()` | List network routes |
-| `get_data_kit_status(id)` | Get data kit status |
+| `get_data_kit_status(id)` | Get deployment status |
 
 ## autoApprove Settings
 
@@ -297,21 +294,31 @@ All tools use the **Connect API** (`/services/data/v63.0/ssot/*`), which works w
 Connect API (/services/data/v63.0/ssot/*)
 ├── query-sql/*              → query()
 ├── metadata                 → get_metadata(), describe_table_full()
+│
 ├── segments/*               → list_segments(), create_segment(), etc.
 ├── activations/*            → list_activations(), get_activation(), etc.
-├── data-streams/*           → list_data_streams(), run_data_stream(), etc.
-├── data-transforms/*        → list_data_transforms(), run_data_transform(), etc.
-├── connections/*            → list_connections(), preview_connection(), etc.
+│
+├── data-streams/*           → list_data_streams(), run_data_stream()
+├── data-transforms/*        → list_data_transforms(), run_data_transform()
+├── connections/*            → list_connections(), preview_connection()
+│
 ├── data-lake-objects/*      → list_data_lake_objects(), create_data_lake_object()
 ├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
 ├── data-spaces/*            → list_data_spaces(), get_data_space_members()
+│
 ├── calculated-insights/*    → list_calculated_insights(), query_calculated_insight()
 ├── data-graphs/*            → list_data_graphs(), query_data_graph()
-├── machine-learning/*       → list_ml_models(), get_prediction()
-├── document-processing/*    → list_document_ai_configs(), extract_document_data()
-├── search-index/*           → list_semantic_searches(), get_semantic_search_config()
 ├── identity-resolutions/*   → list_identity_rulesets(), run_identity_resolution()
-└── universalIdLookup/*      → lookup_unified_id()
+├── universalIdLookup/*      → lookup_unified_id()
+│
+├── machine-learning/*       → list_ml_models(), get_prediction()        ─┐
+├── document-processing/*    → list_document_ai_configs()                 │ AI & ML
+├── search-index/*           → list_semantic_searches()                  ─┘
+│
+├── data-actions/*           → list_data_actions()                       ─┐ Data Actions
+├── data-action-targets/*    → list_data_action_targets()                ─┘
+│
+└── /services/data/v63.0/limits → get_limits()                           ─ Admin
 ```
 
 ## Contributing
