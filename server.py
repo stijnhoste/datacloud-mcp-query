@@ -750,6 +750,120 @@ def list_connectors() -> dict:
     return connect_api.list_connectors()
 
 
+# ========== Data Lake Objects Tools (Phase 4) ==========
+
+@mcp.tool(description="List all data lake objects (raw ingested data tables)")
+def list_data_lake_objects() -> dict:
+    """
+    Returns a list of all data lake objects (DLOs).
+    DLOs represent raw data ingested from external sources before mapping to DMOs.
+    """
+    return connect_api.list_data_lake_objects()
+
+
+@mcp.tool(description="Get details for a specific data lake object")
+def get_data_lake_object(
+    object_name: str = Field(description="Name of the data lake object"),
+) -> dict:
+    """
+    Returns detailed information about a data lake object including its fields.
+    """
+    return connect_api.get_data_lake_object(object_name)
+
+
+@mcp.tool(description="Create a new data lake object (requires approval - creates schema)")
+def create_data_lake_object(
+    object_definition: str = Field(description="JSON-encoded DLO definition including name and fields"),
+) -> dict:
+    """
+    Create a new data lake object in Data Cloud.
+    WARNING: This creates schema and requires explicit approval.
+    """
+    try:
+        definition = json.loads(object_definition)
+        return connect_api.create_data_lake_object(definition)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in object_definition parameter"}
+
+
+# ========== Data Model Objects Tools (Phase 4) ==========
+
+@mcp.tool(description="List all data model objects (canonical entities)")
+def list_data_model_objects() -> dict:
+    """
+    Returns a list of all data model objects (DMOs).
+    DMOs are canonical entities like Individual, Account, ContactPointEmail.
+    """
+    return connect_api.list_data_model_objects()
+
+
+@mcp.tool(description="Get details for a specific data model object")
+def get_data_model_object(
+    object_name: str = Field(description="Name of the data model object"),
+) -> dict:
+    """
+    Returns detailed information about a data model object including its fields and relationships.
+    """
+    return connect_api.get_data_model_object(object_name)
+
+
+@mcp.tool(description="Get field mappings for a data model object")
+def get_dmo_mappings(
+    object_name: str = Field(description="Name of the data model object"),
+) -> dict:
+    """
+    Returns field mappings showing how DLO fields map to DMO fields.
+    Useful for understanding data lineage and transformation.
+    """
+    return connect_api.get_dmo_mappings(object_name)
+
+
+@mcp.tool(description="Create a new data model object (requires approval - creates schema)")
+def create_data_model_object(
+    object_definition: str = Field(description="JSON-encoded DMO definition including name, fields, and relationships"),
+) -> dict:
+    """
+    Create a new data model object in Data Cloud.
+    WARNING: This creates schema and requires explicit approval.
+    """
+    try:
+        definition = json.loads(object_definition)
+        return connect_api.create_data_model_object(definition)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in object_definition parameter"}
+
+
+# ========== Data Spaces Tools (Phase 4) ==========
+
+@mcp.tool(description="List all data spaces (data governance partitions)")
+def list_data_spaces() -> dict:
+    """
+    Returns a list of all data spaces.
+    Data spaces provide logical groupings for data governance and access control.
+    """
+    return connect_api.list_data_spaces()
+
+
+@mcp.tool(description="Get details for a specific data space")
+def get_data_space(
+    space_name: str = Field(description="Name of the data space"),
+) -> dict:
+    """
+    Returns detailed information about a data space including its settings.
+    """
+    return connect_api.get_data_space(space_name)
+
+
+@mcp.tool(description="Get members (objects) of a data space")
+def get_data_space_members(
+    space_name: str = Field(description="Name of the data space"),
+) -> dict:
+    """
+    Returns the list of objects included in a data space.
+    """
+    return connect_api.get_data_space_members(space_name)
+
+
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(

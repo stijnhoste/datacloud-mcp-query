@@ -403,3 +403,131 @@ class ConnectAPIClient:
             dict: List of connector metadata
         """
         return self._request('GET', '/connectors')
+
+    # ========== Data Lake Objects API (Phase 4) ==========
+
+    def list_data_lake_objects(self) -> dict:
+        """
+        List all data lake objects (DLOs).
+
+        Data Lake Objects represent raw data tables ingested from external sources
+        before they are mapped to Data Model Objects.
+
+        Returns:
+            dict: List of data lake object metadata
+        """
+        return self._request('GET', '/data-lake-objects')
+
+    def get_data_lake_object(self, object_name: str) -> dict:
+        """
+        Get details for a specific data lake object.
+
+        Args:
+            object_name: Name of the data lake object
+
+        Returns:
+            dict: Data lake object details including fields and settings
+        """
+        return self._request('GET', f'/data-lake-objects/{object_name}')
+
+    def create_data_lake_object(self, object_definition: dict) -> dict:
+        """
+        Create a new data lake object.
+
+        Args:
+            object_definition: DLO configuration including name, fields, and settings
+
+        Returns:
+            dict: Created data lake object details
+        """
+        return self._request('POST', '/data-lake-objects', json_data=object_definition)
+
+    # ========== Data Model Objects API (Phase 4) ==========
+
+    def list_data_model_objects(self) -> dict:
+        """
+        List all data model objects (DMOs).
+
+        Data Model Objects are the canonical entities in Data Cloud that follow
+        the standard schema (e.g., Individual, Account, ContactPointEmail).
+
+        Returns:
+            dict: List of data model object metadata
+        """
+        return self._request('GET', '/data-model-objects')
+
+    def get_data_model_object(self, object_name: str) -> dict:
+        """
+        Get details for a specific data model object.
+
+        Args:
+            object_name: Name of the data model object
+
+        Returns:
+            dict: Data model object details including fields and relationships
+        """
+        return self._request('GET', f'/data-model-objects/{object_name}')
+
+    def get_dmo_mappings(self, object_name: str) -> dict:
+        """
+        Get field mappings for a data model object.
+
+        Shows how DLO fields are mapped to DMO fields.
+
+        Args:
+            object_name: Name of the data model object
+
+        Returns:
+            dict: Field mapping configuration
+        """
+        return self._request('GET', f'/data-model-objects/{object_name}/mappings')
+
+    def create_data_model_object(self, object_definition: dict) -> dict:
+        """
+        Create a new data model object.
+
+        Args:
+            object_definition: DMO configuration including name, fields, and relationships
+
+        Returns:
+            dict: Created data model object details
+        """
+        return self._request('POST', '/data-model-objects', json_data=object_definition)
+
+    # ========== Data Spaces API (Phase 4) ==========
+
+    def list_data_spaces(self) -> dict:
+        """
+        List all data spaces.
+
+        Data Spaces provide logical groupings for data governance and access control,
+        allowing you to partition data for different teams or use cases.
+
+        Returns:
+            dict: List of data space metadata
+        """
+        return self._request('GET', '/data-spaces')
+
+    def get_data_space(self, space_name: str) -> dict:
+        """
+        Get details for a specific data space.
+
+        Args:
+            space_name: Name of the data space
+
+        Returns:
+            dict: Data space details including settings and permissions
+        """
+        return self._request('GET', f'/data-spaces/{space_name}')
+
+    def get_data_space_members(self, space_name: str) -> dict:
+        """
+        Get members (objects) included in a data space.
+
+        Args:
+            space_name: Name of the data space
+
+        Returns:
+            dict: List of objects in the data space
+        """
+        return self._request('GET', f'/data-spaces/{space_name}/members')

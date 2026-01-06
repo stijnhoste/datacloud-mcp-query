@@ -252,20 +252,20 @@ class DirectAPISession:
 
 ---
 
-## Phase 4: Schema Management
+## Phase 4: Schema Management ✅
 
 | Tool | Status | Endpoint |
 |------|--------|----------|
-| `list_data_lake_objects()` | ⬜ | `GET /ssot/data-lake-objects` |
-| `get_data_lake_object(name)` | ⬜ | `GET /ssot/data-lake-objects/{name}` |
-| `list_data_model_objects()` | ⬜ | `GET /ssot/data-model-objects` |
-| `get_data_model_object(name)` | ⬜ | `GET /ssot/data-model-objects/{name}` |
-| `get_dmo_mappings(name)` | ⬜ | `GET /ssot/data-model-objects/{name}/mappings` |
-| `list_data_spaces()` | ⬜ | `GET /ssot/data-spaces` |
-| `get_data_space(name)` | ⬜ | `GET /ssot/data-spaces/{name}` |
-| `get_data_space_members(name)` | ⬜ | `GET /ssot/data-spaces/{name}/members` |
-| `create_data_lake_object(...)` | ⬜ | `POST /ssot/data-lake-objects` |
-| `create_data_model_object(...)` | ⬜ | `POST /ssot/data-model-objects` |
+| `list_data_lake_objects()` | ✅ | `GET /ssot/data-lake-objects` |
+| `get_data_lake_object(name)` | ✅ | `GET /ssot/data-lake-objects/{name}` |
+| `list_data_model_objects()` | ✅ | `GET /ssot/data-model-objects` |
+| `get_data_model_object(name)` | ✅ | `GET /ssot/data-model-objects/{name}` |
+| `get_dmo_mappings(name)` | ✅ | `GET /ssot/data-model-objects/{name}/mappings` |
+| `list_data_spaces()` | ✅ | `GET /ssot/data-spaces` |
+| `get_data_space(name)` | ✅ | `GET /ssot/data-spaces/{name}` |
+| `get_data_space_members(name)` | ✅ | `GET /ssot/data-spaces/{name}/members` |
+| `create_data_lake_object(...)` | ✅ | `POST /ssot/data-lake-objects` |
+| `create_data_model_object(...)` | ✅ | `POST /ssot/data-model-objects` |
 
 ---
 
