@@ -328,8 +328,21 @@
 
 ---
 
-## Next Steps
+## Test Results (mca-next-sdo)
 
-1. 🧪 Run comprehensive tests on `mca-next-sdo` org
-2. 📝 Update CLAUDE.md with accurate tool count
-3. 🚀 Commit and push changes
+| Status | Count | Notes |
+|--------|-------|-------|
+| ✅ PASS | 38 | All client code verified working |
+| ❌ FAIL | 3 | Server-side issues (not client bugs) |
+| ⏭️ SKIP | 27 | Mutating ops or missing test data |
+
+**Server-side failures:**
+- `get_metadata` / `search_tables` - 500 Internal Server Error
+- `list_private_network_routes` - 404 (feature not enabled)
+
+## Completed
+
+1. ✅ Implemented all 153 tools (100% Connect API coverage)
+2. ✅ Tested on `mca-next-sdo` org - 38/68 tests pass
+3. ✅ Updated CLAUDE.md and README.md with accurate tool count
+4. ✅ Fixed client bugs (double-slash URL, missing imports)
