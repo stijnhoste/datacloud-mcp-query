@@ -233,22 +233,22 @@ class DirectAPISession:
 
 ---
 
-## Phase 3: Data Pipeline Visibility
+## Phase 3: Data Pipeline Visibility ✅
 
 | Tool | Status | Endpoint |
 |------|--------|----------|
-| `list_data_streams()` | ⬜ | `GET /ssot/data-streams` |
-| `get_data_stream(name)` | ⬜ | `GET /ssot/data-streams/{name}` |
-| `list_data_transforms()` | ⬜ | `GET /ssot/data-transforms` |
-| `get_data_transform(name)` | ⬜ | `GET /ssot/data-transforms/{name}` |
-| `get_transform_run_history(name)` | ⬜ | `GET /ssot/data-transforms/{name}/run-history` |
-| `list_connections()` | ⬜ | `GET /ssot/connections` |
-| `get_connection(name)` | ⬜ | `GET /ssot/connections/{name}` |
-| `list_connectors()` | ⬜ | `GET /ssot/connectors` |
-| `get_connection_objects(name)` | ⬜ | `POST /ssot/connections/{name}/objects` |
-| `preview_connection(name, object)` | ⬜ | `POST /ssot/connections/{name}/preview` |
-| `run_data_stream(...)` | ⬜ | `POST /ssot/data-streams/actions/run` |
-| `run_data_transform(...)` | ⬜ | `POST /ssot/data-transforms/{name}/actions/run` |
+| `list_data_streams()` | ✅ | `GET /ssot/data-streams` |
+| `get_data_stream(name)` | ✅ | `GET /ssot/data-streams/{name}` |
+| `list_data_transforms()` | ✅ | `GET /ssot/data-transforms` |
+| `get_data_transform(name)` | ✅ | `GET /ssot/data-transforms/{name}` |
+| `get_transform_run_history(name)` | ✅ | `GET /ssot/data-transforms/{name}/run-history` |
+| `list_connections()` | ✅ | `GET /ssot/connections` |
+| `get_connection(name)` | ✅ | `GET /ssot/connections/{name}` |
+| `list_connectors()` | ✅ | `GET /ssot/connectors` |
+| `get_connection_objects(name)` | ✅ | `POST /ssot/connections/{name}/objects` |
+| `preview_connection(name, object)` | ✅ | `POST /ssot/connections/{name}/preview` |
+| `run_data_stream(...)` | ✅ | `POST /ssot/data-streams/actions/run` |
+| `run_data_transform(...)` | ✅ | `POST /ssot/data-transforms/{name}/actions/run` |
 
 ---
 
