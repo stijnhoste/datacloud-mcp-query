@@ -253,3 +253,153 @@ class ConnectAPIClient:
             dict: List of activation targets
         """
         return self._request('GET', '/activation-targets')
+
+    # ========== Data Streams API (Phase 3) ==========
+
+    def list_data_streams(self) -> dict:
+        """
+        List all data streams.
+
+        Returns:
+            dict: List of data stream metadata
+        """
+        return self._request('GET', '/data-streams')
+
+    def get_data_stream(self, stream_name: str) -> dict:
+        """
+        Get details for a specific data stream.
+
+        Args:
+            stream_name: Name of the data stream
+
+        Returns:
+            dict: Data stream details
+        """
+        return self._request('GET', f'/data-streams/{stream_name}')
+
+    def run_data_stream(self, stream_names: list[str]) -> dict:
+        """
+        Run one or more data streams.
+
+        Args:
+            stream_names: List of data stream names to run
+
+        Returns:
+            dict: Run result
+        """
+        return self._request('POST', '/data-streams/actions/run', json_data={'dataStreamNames': stream_names})
+
+    # ========== Data Transforms API (Phase 3) ==========
+
+    def list_data_transforms(self) -> dict:
+        """
+        List all data transforms.
+
+        Returns:
+            dict: List of data transform metadata
+        """
+        return self._request('GET', '/data-transforms')
+
+    def get_data_transform(self, transform_name: str) -> dict:
+        """
+        Get details for a specific data transform.
+
+        Args:
+            transform_name: Name of the data transform
+
+        Returns:
+            dict: Data transform details
+        """
+        return self._request('GET', f'/data-transforms/{transform_name}')
+
+    def get_transform_run_history(self, transform_name: str) -> dict:
+        """
+        Get run history for a data transform.
+
+        Args:
+            transform_name: Name of the data transform
+
+        Returns:
+            dict: Run history
+        """
+        return self._request('GET', f'/data-transforms/{transform_name}/run-history')
+
+    def run_data_transform(self, transform_name: str) -> dict:
+        """
+        Run a data transform.
+
+        Args:
+            transform_name: Name of the data transform to run
+
+        Returns:
+            dict: Run result
+        """
+        return self._request('POST', f'/data-transforms/{transform_name}/actions/run')
+
+    # ========== Connections API (Phase 3) ==========
+
+    def list_connections(self) -> dict:
+        """
+        List all connections.
+
+        Returns:
+            dict: List of connection metadata
+        """
+        return self._request('GET', '/connections')
+
+    def get_connection(self, connection_name: str) -> dict:
+        """
+        Get details for a specific connection.
+
+        Args:
+            connection_name: Name of the connection
+
+        Returns:
+            dict: Connection details
+        """
+        return self._request('GET', f'/connections/{connection_name}')
+
+    def get_connection_objects(self, connection_name: str) -> dict:
+        """
+        Get available objects for a connection.
+
+        Args:
+            connection_name: Name of the connection
+
+        Returns:
+            dict: Available objects
+        """
+        return self._request('POST', f'/connections/{connection_name}/objects')
+
+    def preview_connection(
+        self,
+        connection_name: str,
+        object_name: str,
+        limit: Optional[int] = None
+    ) -> dict:
+        """
+        Preview data from a connection object.
+
+        Args:
+            connection_name: Name of the connection
+            object_name: Name of the object to preview
+            limit: Maximum number of records to preview
+
+        Returns:
+            dict: Preview data
+        """
+        payload = {'objectName': object_name}
+        if limit:
+            payload['limit'] = limit
+        return self._request('POST', f'/connections/{connection_name}/preview', json_data=payload)
+
+    # ========== Connectors API (Phase 3) ==========
+
+    def list_connectors(self) -> dict:
+        """
+        List all available connectors.
+
+        Returns:
+            dict: List of connector metadata
+        """
+        return self._request('GET', '/connectors')

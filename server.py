@@ -617,6 +617,139 @@ def list_activation_targets() -> dict:
     return connect_api.list_activation_targets()
 
 
+# ========== Data Streams Tools (Phase 3) ==========
+
+@mcp.tool(description="List all data streams in Data Cloud")
+def list_data_streams() -> dict:
+    """
+    Returns a list of all data streams with their metadata.
+    Data streams bring data into Data Cloud from external sources.
+    """
+    return connect_api.list_data_streams()
+
+
+@mcp.tool(description="Get details for a specific data stream")
+def get_data_stream(
+    stream_name: str = Field(description="Name of the data stream"),
+) -> dict:
+    """
+    Returns detailed information about a data stream.
+    """
+    return connect_api.get_data_stream(stream_name)
+
+
+@mcp.tool(description="Run data streams (requires approval - executes data pipeline)")
+def run_data_stream(
+    stream_names: str = Field(description="JSON-encoded array of data stream names to run"),
+) -> dict:
+    """
+    Run one or more data streams to ingest data.
+    WARNING: This executes data pipelines and requires explicit approval.
+    """
+    try:
+        names = json.loads(stream_names)
+        return connect_api.run_data_stream(names)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in stream_names parameter"}
+
+
+# ========== Data Transforms Tools (Phase 3) ==========
+
+@mcp.tool(description="List all data transforms in Data Cloud")
+def list_data_transforms() -> dict:
+    """
+    Returns a list of all data transforms with their metadata.
+    Data transforms process and transform data within Data Cloud.
+    """
+    return connect_api.list_data_transforms()
+
+
+@mcp.tool(description="Get details for a specific data transform")
+def get_data_transform(
+    transform_name: str = Field(description="Name of the data transform"),
+) -> dict:
+    """
+    Returns detailed information about a data transform.
+    """
+    return connect_api.get_data_transform(transform_name)
+
+
+@mcp.tool(description="Get run history for a data transform")
+def get_transform_run_history(
+    transform_name: str = Field(description="Name of the data transform"),
+) -> dict:
+    """
+    Returns the execution history for a data transform.
+    Useful for debugging and monitoring.
+    """
+    return connect_api.get_transform_run_history(transform_name)
+
+
+@mcp.tool(description="Run a data transform (requires approval - executes data pipeline)")
+def run_data_transform(
+    transform_name: str = Field(description="Name of the data transform to run"),
+) -> dict:
+    """
+    Run a data transform to process data.
+    WARNING: This executes data pipelines and requires explicit approval.
+    """
+    return connect_api.run_data_transform(transform_name)
+
+
+# ========== Connections Tools (Phase 3) ==========
+
+@mcp.tool(description="List all connections in Data Cloud")
+def list_connections() -> dict:
+    """
+    Returns a list of all connections to external data sources.
+    """
+    return connect_api.list_connections()
+
+
+@mcp.tool(description="Get details for a specific connection")
+def get_connection(
+    connection_name: str = Field(description="Name of the connection"),
+) -> dict:
+    """
+    Returns detailed information about a connection.
+    """
+    return connect_api.get_connection(connection_name)
+
+
+@mcp.tool(description="Get available objects for a connection")
+def get_connection_objects(
+    connection_name: str = Field(description="Name of the connection"),
+) -> dict:
+    """
+    Returns a list of available objects (tables/entities) from a connection.
+    Useful for discovering what data is available to ingest.
+    """
+    return connect_api.get_connection_objects(connection_name)
+
+
+@mcp.tool(description="Preview data from a connection object")
+def preview_connection(
+    connection_name: str = Field(description="Name of the connection"),
+    object_name: str = Field(description="Name of the object to preview"),
+    limit: Optional[int] = Field(default=None, description="Maximum number of records to preview"),
+) -> dict:
+    """
+    Preview sample data from a connection object.
+    Useful for understanding data structure before ingestion.
+    """
+    return connect_api.preview_connection(connection_name, object_name, limit)
+
+
+# ========== Connectors Tools (Phase 3) ==========
+
+@mcp.tool(description="List all available connectors")
+def list_connectors() -> dict:
+    """
+    Returns a list of available connector types (e.g., Salesforce, S3, SFTP).
+    """
+    return connect_api.list_connectors()
+
+
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
