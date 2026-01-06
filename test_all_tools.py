@@ -277,7 +277,8 @@ def main():
     if connectors_result and isinstance(connectors_result, dict):
         connector_list = connectors_result.get("connectorInfoList", [])
         if connector_list:
-            test_connector_type = connector_list[0].get("connectorType")
+            # Field is 'name' not 'connectorType'
+            test_connector_type = connector_list[0].get("name")
 
     connections_result = None
     if test_connector_type:
