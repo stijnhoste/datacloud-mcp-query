@@ -15,7 +15,7 @@ pip install -r requirements.txt
 # Run the MCP server (typically launched by Cursor/Claude Code, not manually)
 python server.py
 
-# Test the query API directly (requires SF_CLIENT_ID and SF_CLIENT_SECRET env vars)
+# Test the query API directly
 python connect_api_dc_sql.py
 ```
 
@@ -23,19 +23,26 @@ python connect_api_dc_sql.py
 
 ```
 server.py                      # MCP server entry point - defines all 68 tools
-    ├── oauth.py               # OAuth2 + PKCE flow, token caching
+    ├── oauth.py               # OAuth2 + PKCE flow, token caching, SF CLI integration
+    ├── sf_cli_auth.py         # SF CLI org discovery and authentication
     ├── connect_api_dc_sql.py  # Connect API client (query-sql endpoint)
-    ├── connect_api_segments.py # Connect API client (segments, pipelines, schema, ML, admin)
-    ├── direct_api.py          # Direct API client (2-step auth, metadata, insights, graphs)
+    ├── connect_api_segments.py # Connect API client (all other endpoints)
+    ├── direct_api.py          # Direct API client (ingestion only - requires CDP scopes)
     └── query_validation.py    # SQL validation with sqlparse
 ```
 
 ### API Architecture
 
+Almost all tools use Connect API which works with SF CLI authentication:
+
 ```
-Connect APIs (/services/data/v63.0/ssot/*)
+Connect APIs (/services/data/v63.0/ssot/*) - Works with SF CLI auth
 ├── query-sql              → query()
-├── pg_catalog             → list_tables(), describe_table()
+├── metadata               → get_metadata(), describe_table_full(), get_relationships()
+├── calculated-insights/*  → list_calculated_insights(), query_calculated_insight()
+├── data-graphs/*          → list_data_graphs(), query_data_graph()
+├── universalIdLookup/*    → lookup_unified_id()
+├── profile/*              → Profile queries
 ├── segments/*             → list_segments(), get_segment(), create_segment(), etc.
 ├── activations/*          → list_activations(), get_activation(), etc.
 ├── data-streams/*         → list_data_streams(), run_data_stream(), etc.
@@ -44,18 +51,16 @@ Connect APIs (/services/data/v63.0/ssot/*)
 ├── data-lake-objects/*    → list_data_lake_objects(), create_data_lake_object(), etc.
 ├── data-model-objects/*   → list_data_model_objects(), get_dmo_mappings(), etc.
 ├── data-spaces/*          → list_data_spaces(), get_data_space_members(), etc.
-├── ml-models/*            → list_ml_models(), get_prediction(), etc.
-├── semantic-searches/*    → list_semantic_searches(), get_semantic_search_config(), etc.
+├── machine-learning/*     → list_ml_models(), get_prediction(), etc.
+├── search-index/*         → list_semantic_searches(), get_semantic_search_config(), etc.
 ├── identity-resolutions/* → list_identity_rulesets(), run_identity_resolution(), etc.
 └── limits                 → get_limits()
 
-Direct APIs (/api/v1/*)  ← Faster, requires 2-step auth
-├── metadata               → get_metadata(), describe_table_full(), get_relationships()
-├── insight/*              → list_calculated_insights(), query_calculated_insight()
-├── dataGraph/*            → list_data_graphs(), query_data_graph()
-├── universalIdLookup/*    → lookup_unified_id()
+Direct APIs (/api/v1/*) - Requires Connected App with CDP scopes
 └── ingest/*               → ingest_records(), delete_records()
 ```
+
+See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 
 ### Key Flows
 
@@ -78,14 +83,27 @@ Direct APIs (/api/v1/*)  ← Faster, requires 2-step auth
 
 ## Environment Variables
 
-Required:
+**For SF CLI Auth (recommended - no Connected App needed):**
+No environment variables required! The server uses orgs authenticated via `sf org login web`.
+Use `list_orgs()` and `set_target_org(alias)` to select which org to query.
+
+**For Custom Connected App (only needed for data ingestion):**
 - `SF_CLIENT_ID` - Salesforce connected app client ID
 - `SF_CLIENT_SECRET` - Salesforce connected app client secret
-
-Optional:
 - `SF_LOGIN_URL` - Salesforce login URL (default: `login.salesforce.com`)
 - `SF_CALLBACK_URL` - OAuth callback URL (default: `http://localhost:55556/Callback`)
+
+**Other Options:**
 - `DEFAULT_LIST_TABLE_FILTER` - SQL LIKE pattern for filtering tables (default: `%`)
+
+### Authentication Modes
+
+| Mode | Setup | Features | Use Case |
+|------|-------|----------|----------|
+| **SF CLI** | `sf org login web` | 66/68 tools | Most users |
+| **Connected App** | Create app with CDP scopes | All 68 tools | Data ingestion |
+
+SF CLI auth works because most Data Cloud APIs use Connect API endpoints which only need standard Salesforce API scopes. Only the ingestion APIs (`ingest_records`, `delete_records`) require a Connected App with CDP scopes.
 
 ## MCP Tools (68 total)
 
@@ -274,11 +292,12 @@ Requires approval:
 | File | Purpose |
 |------|---------|
 | `server.py` | MCP server, all 68 tool definitions |
-| `oauth.py` | OAuth2 + PKCE authentication, token caching |
+| `oauth.py` | OAuth2 + PKCE authentication, token caching, SF CLI integration |
+| `sf_cli_auth.py` | SF CLI org discovery and authentication |
 | `connect_api_dc_sql.py` | Connect API client for SQL queries |
-| `connect_api_segments.py` | Connect API client for segments, pipelines, schema, ML, admin |
-| `direct_api.py` | Direct API client (2-step auth, metadata, insights) |
+| `connect_api_segments.py` | Connect API client for all other endpoints |
+| `direct_api.py` | Direct API client (ingestion only - requires CDP scopes) |
 | `query_validation.py` | SQL validation with sqlparse |
 | `requirements.txt` | Python dependencies |
-| `todo.md` | Feature backlog and implementation status |
-| `api-reference/` | Postman collections for API reference |
+| `api-reference/API_REFERENCE.md` | Consolidated API endpoint reference |
+| `api-reference/*.json` | Postman collections for API reference |

@@ -1,38 +1,55 @@
-# Data Cloud MCP Server
+# Data Cloud MCP Server (Enhanced Fork)
 
-This MCP server provides a seamless integration between AI assistants (Cursor, Claude Code) and Salesforce Data Cloud, allowing you to execute SQL queries, explore metadata, work with calculated insights, and manage data directly from your development environment.
+> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **66 tools**, SF CLI authentication, and full Connect API coverage.
+
+## What's Different from Upstream
+
+| Aspect | Original | This Fork |
+|--------|----------|-----------|
+| **Tools** | 4 | 66 |
+| **Auth** | Connected App OAuth | SF CLI (no setup required) |
+| **APIs** | Connect + Direct | Connect API only |
+| **Setup** | Create Connected App | Just `sf org login web` |
 
 ## Features
 
 - **SQL Queries** - Execute PostgreSQL-dialect SQL against Data Cloud
-- **Schema Discovery** - List tables, describe columns, search by keyword
-- **Rich Metadata** - Access field types, relationships, and entity categories
+- **Schema Discovery** - List tables, describe columns, explore metadata
+- **Segments & Activations** - Manage audience segments and activations
+- **Data Pipelines** - Work with data streams, transforms, and connections
 - **Calculated Insights** - Query pre-aggregated metrics
 - **Data Graphs** - Traverse unified customer profiles
-- **Identity Resolution** - Look up unified IDs from source records
-- **Data Ingestion** - Insert and delete records (with approval)
-- **Query Validation** - Client-side SQL validation with suggestions
+- **ML Models** - List models and get predictions
+- **Identity Resolution** - Manage rulesets and lookup unified IDs
+- **Admin Tools** - Monitor limits, data actions, and more
 
 ## Quick Start
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/salesforce/datacloud-mcp-query.git
-   cd datacloud-mcp-query
-   ```
+### 1. Prerequisites
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+- Python 3.10+
+- [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) installed
+- A Salesforce org with Data Cloud enabled
 
-3. Set up your Salesforce connected app (see [Connected App Setup](CONNECTED_APP_SETUP.md))
+### 2. Clone and Install
 
-4. Configure in your MCP client (Cursor or Claude Code)
+```bash
+git clone https://github.com/YOUR_USERNAME/datacloud-mcp-query.git
+cd datacloud-mcp-query
+pip install -r requirements.txt
+```
+
+### 3. Authenticate with SF CLI
+
+```bash
+sf org login web --alias my-dc-org
+```
+
+### 4. Configure Your MCP Client
 
 ## Adding to Cursor
 
-Add to your Cursor settings (`~/.cursor/mcp.json` or through Cursor Settings → MCP):
+Add to your Cursor settings (`~/.cursor/mcp.json`):
 
 ```json
 {
@@ -41,22 +58,8 @@ Add to your Cursor settings (`~/.cursor/mcp.json` or through Cursor Settings →
       "command": "python",
       "args": ["/path/to/datacloud-mcp-query/server.py"],
       "env": {
-        "SF_CLIENT_ID": "<your-client-id>",
-        "SF_CLIENT_SECRET": "<your-client-secret>"
-      },
-      "autoApprove": [
-        "list_tables",
-        "describe_table",
-        "describe_table_full",
-        "get_metadata",
-        "get_relationships",
-        "explore_table",
-        "search_tables",
-        "list_calculated_insights",
-        "list_data_graphs",
-        "validate_query",
-        "format_sql"
-      ]
+        "DC_DEFAULT_ORG": "my-dc-org"
+      }
     }
   }
 }
@@ -64,7 +67,7 @@ Add to your Cursor settings (`~/.cursor/mcp.json` or through Cursor Settings →
 
 ## Adding to Claude Code
 
-Add to your Claude Code MCP settings:
+Add to `~/.claude/mcp.json`:
 
 ```json
 {
@@ -73,8 +76,7 @@ Add to your Claude Code MCP settings:
       "command": "python",
       "args": ["/path/to/datacloud-mcp-query/server.py"],
       "env": {
-        "SF_CLIENT_ID": "<your-client-id>",
-        "SF_CLIENT_SECRET": "<your-client-secret>"
+        "DC_DEFAULT_ORG": "my-dc-org"
       }
     }
   }
@@ -83,115 +85,233 @@ Add to your Claude Code MCP settings:
 
 ## Configuration
 
-### Required Environment Variables
+### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `SF_CLIENT_ID` | Salesforce connected app client ID |
-| `SF_CLIENT_SECRET` | Salesforce connected app client secret |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DC_DEFAULT_ORG` | No | - | SF CLI org alias to use by default |
+| `DEFAULT_LIST_TABLE_FILTER` | No | `%` | SQL LIKE pattern for filtering tables |
 
-### Optional Environment Variables
+### Multi-Org Support
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SF_LOGIN_URL` | `login.salesforce.com` | Salesforce login URL |
-| `SF_CALLBACK_URL` | `http://localhost:55556/Callback` | OAuth callback URL |
-| `DEFAULT_LIST_TABLE_FILTER` | `%` | SQL LIKE pattern for filtering tables |
+If you don't set `DC_DEFAULT_ORG`, use these tools to select an org at runtime:
 
-## Available Tools
+```
+list_orgs()           # See all authenticated orgs
+set_target_org(alias) # Switch to a specific org
+get_target_org()      # See currently selected org
+```
 
-### Core Query Tools
+## Available Tools (66 total)
 
+### Org Management
+| Tool | Description |
+|------|-------------|
+| `list_orgs()` | List all SF CLI authenticated orgs |
+| `set_target_org(alias)` | Switch to a different org |
+| `get_target_org()` | Get currently selected org |
+
+### Query Tools
 | Tool | Description |
 |------|-------------|
 | `query(sql)` | Execute SQL queries against Data Cloud |
-| `validate_query(sql, check_metadata)` | Validate SQL syntax before execution |
+| `validate_query(sql)` | Validate SQL syntax before execution |
 | `format_sql(sql)` | Format SQL for readability |
 
-### Schema Discovery Tools
-
+### Schema Discovery
 | Tool | Description |
 |------|-------------|
 | `list_tables()` | List available tables |
-| `describe_table(table)` | Get column names for a table |
-| `describe_table_full(table)` | Get detailed schema with field types |
-| `get_metadata(entity_name, entity_type, entity_category)` | Get rich metadata from Direct API |
-| `get_relationships(entity_name)` | Get entity relationships for JOINs |
+| `describe_table(table)` | Get column names |
+| `describe_table_full(table)` | Get detailed schema with types |
+| `get_metadata(...)` | Get rich entity metadata |
+| `get_relationships(entity)` | Get relationships for JOINs |
+| `explore_table(table)` | Schema + samples + profiles |
+| `search_tables(keyword)` | Search tables/columns |
 
-### Data Exploration Tools
-
+### Segments
 | Tool | Description |
 |------|-------------|
-| `explore_table(table, sample_size)` | Schema + samples + column profiles |
-| `search_tables(keyword)` | Search tables/columns by keyword |
+| `list_segments()` | List all segments |
+| `get_segment(name)` | Get segment details |
+| `get_segment_members(name)` | Get segment members |
+| `count_segment(name)` | Count segment members |
+| `create_segment(definition)` | Create segment |
+| `update_segment(name, updates)` | Update segment |
+| `delete_segment(name)` | Delete segment |
+| `publish_segment(name)` | Publish for activation |
 
-### Calculated Insights Tools
-
+### Activations
 | Tool | Description |
 |------|-------------|
-| `list_calculated_insights()` | List available calculated insights |
-| `query_calculated_insight(insight_name, dimensions, measures, filters)` | Query pre-aggregated metrics |
+| `list_activations()` | List all activations |
+| `get_activation(id)` | Get activation details |
+| `get_audience_records(id)` | Get audience DMO records |
+| `list_activation_targets()` | List activation targets |
 
-### Data Graph Tools
-
+### Data Streams
 | Tool | Description |
 |------|-------------|
-| `list_data_graphs()` | List available data graphs |
-| `query_data_graph(graph_name, record_id, lookup_keys)` | Query unified profiles |
+| `list_data_streams()` | List all data streams |
+| `get_data_stream(name)` | Get stream details |
+| `run_data_stream(names)` | Run data streams |
 
-### Identity Tools
-
+### Data Transforms
 | Tool | Description |
 |------|-------------|
-| `lookup_unified_id(entity_name, data_source_id, data_source_object_id, source_record_id)` | Look up unified IDs |
+| `list_data_transforms()` | List all transforms |
+| `get_data_transform(name)` | Get transform details |
+| `get_transform_run_history(name)` | Get run history |
+| `run_data_transform(name)` | Run transform |
 
-### Data Modification Tools (Require Approval)
-
+### Connections
 | Tool | Description |
 |------|-------------|
-| `ingest_records(source_name, object_name, records)` | Insert records into Data Cloud |
-| `delete_records(source_name, object_name, record_ids)` | Delete records from Data Cloud |
+| `list_connections()` | List all connections |
+| `get_connection(name)` | Get connection details |
+| `get_connection_objects(name)` | Get available objects |
+| `preview_connection(name, object)` | Preview data |
+| `list_connectors()` | List connector types |
+
+### Data Lake Objects (DLOs)
+| Tool | Description |
+|------|-------------|
+| `list_data_lake_objects()` | List all DLOs |
+| `get_data_lake_object(name)` | Get DLO details |
+| `create_data_lake_object(def)` | Create DLO |
+
+### Data Model Objects (DMOs)
+| Tool | Description |
+|------|-------------|
+| `list_data_model_objects()` | List all DMOs |
+| `get_data_model_object(name)` | Get DMO details |
+| `get_dmo_mappings(name)` | Get field mappings |
+| `create_data_model_object(def)` | Create DMO |
+
+### Data Spaces
+| Tool | Description |
+|------|-------------|
+| `list_data_spaces()` | List all data spaces |
+| `get_data_space(name)` | Get data space details |
+| `get_data_space_members(name)` | Get objects in space |
+
+### Calculated Insights
+| Tool | Description |
+|------|-------------|
+| `list_calculated_insights()` | List all insights |
+| `query_calculated_insight(...)` | Query insight data |
+
+### Data Graphs
+| Tool | Description |
+|------|-------------|
+| `list_data_graphs()` | List all data graphs |
+| `query_data_graph(...)` | Query unified profiles |
+
+### Identity
+| Tool | Description |
+|------|-------------|
+| `lookup_unified_id(...)` | Look up unified IDs |
+| `list_identity_rulesets()` | List identity rulesets |
+| `get_identity_ruleset(name)` | Get ruleset details |
+| `run_identity_resolution(name)` | Run identity resolution |
+
+### ML Models
+| Tool | Description |
+|------|-------------|
+| `list_ml_models()` | List all ML models |
+| `get_ml_model(name)` | Get model details |
+| `get_prediction(model, data)` | Get predictions |
+| `list_model_artifacts()` | List model artifacts |
+
+### Document AI
+| Tool | Description |
+|------|-------------|
+| `list_document_ai_configs()` | List Document AI configs |
+| `extract_document_data(...)` | Extract document data |
+
+### Semantic Search
+| Tool | Description |
+|------|-------------|
+| `list_semantic_searches()` | List semantic searches |
+| `get_semantic_search(name)` | Get search details |
+| `get_semantic_search_config()` | Get global config |
+
+### Admin
+| Tool | Description |
+|------|-------------|
+| `get_limits()` | Get API limits and usage |
+| `list_data_actions()` | List data actions |
+| `list_data_action_targets()` | List action targets |
+| `list_private_network_routes()` | List network routes |
+| `get_data_kit_status(id)` | Get data kit status |
 
 ## autoApprove Settings
 
-For agentic workflows, you can auto-approve read-only tools. Recommended settings:
+For agentic workflows, auto-approve read-only tools:
 
-**Safe to auto-approve** (read-only):
-- `list_tables`, `describe_table`, `describe_table_full`
-- `get_metadata`, `get_relationships`
-- `explore_table`, `search_tables`
-- `list_calculated_insights`, `list_data_graphs`
-- `validate_query`, `format_sql`
-
-**Requires explicit approval** (executes queries or modifies data):
-- `query` - Executes SQL against Data Cloud
-- `query_calculated_insight` - Queries calculated insights
-- `query_data_graph` - Queries data graphs
-- `lookup_unified_id` - Queries identity resolution
-- `ingest_records` - Inserts data
-- `delete_records` - Deletes data
+```json
+{
+  "autoApprove": [
+    "list_orgs", "get_target_org",
+    "list_tables", "describe_table", "describe_table_full",
+    "get_metadata", "get_relationships", "explore_table", "search_tables",
+    "list_segments", "get_segment", "count_segment",
+    "list_activations", "get_activation", "list_activation_targets",
+    "list_data_streams", "get_data_stream",
+    "list_data_transforms", "get_data_transform", "get_transform_run_history",
+    "list_connections", "get_connection", "list_connectors",
+    "list_data_lake_objects", "get_data_lake_object",
+    "list_data_model_objects", "get_data_model_object", "get_dmo_mappings",
+    "list_data_spaces", "get_data_space", "get_data_space_members",
+    "list_calculated_insights", "list_data_graphs",
+    "list_identity_rulesets", "get_identity_ruleset",
+    "list_ml_models", "get_ml_model", "list_model_artifacts",
+    "list_document_ai_configs",
+    "list_semantic_searches", "get_semantic_search", "get_semantic_search_config",
+    "get_limits", "list_data_actions", "list_data_action_targets",
+    "list_private_network_routes",
+    "validate_query", "format_sql"
+  ]
+}
+```
 
 ## Authentication
 
-The server implements OAuth2 with PKCE:
-- Opens a browser window for Salesforce authentication
-- Caches tokens to `~/.datacloud_mcp_token.json`
-- Tokens expire after 110 minutes and are auto-refreshed
-- For Direct APIs, performs a second token exchange for tenant-specific access
+This fork uses **SF CLI authentication** exclusively:
+
+1. Authenticate via SF CLI: `sf org login web --alias my-org`
+2. Set `DC_DEFAULT_ORG` environment variable, or use `set_target_org()` tool
+3. The server reads credentials from SF CLI's secure token storage
+
+**Benefits:**
+- No Connected App setup required
+- No client secrets to manage
+- Multi-org support built-in
+- Tokens managed by SF CLI
 
 ## API Architecture
 
-```
-Connect APIs (/services/data/v63.0/ssot/*)
-├── query-sql    → query()
-└── pg_catalog   → list_tables(), describe_table()
+All tools use the **Connect API** (`/services/data/v63.0/ssot/*`), which works with standard Salesforce OAuth tokens from SF CLI.
 
-Direct APIs (/api/v1/*)  ← Faster, requires 2-step auth
-├── metadata               → get_metadata(), describe_table_full(), get_relationships()
-├── insight/*              → list_calculated_insights(), query_calculated_insight()
-├── dataGraph/*            → list_data_graphs(), query_data_graph()
-├── universalIdLookup/*    → lookup_unified_id()
-└── ingest/*               → ingest_records(), delete_records()
+```
+Connect API (/services/data/v63.0/ssot/*)
+├── query-sql/*              → query()
+├── metadata                 → get_metadata(), describe_table_full()
+├── segments/*               → list_segments(), create_segment(), etc.
+├── activations/*            → list_activations(), get_activation(), etc.
+├── data-streams/*           → list_data_streams(), run_data_stream(), etc.
+├── data-transforms/*        → list_data_transforms(), run_data_transform(), etc.
+├── connections/*            → list_connections(), preview_connection(), etc.
+├── data-lake-objects/*      → list_data_lake_objects(), create_data_lake_object()
+├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
+├── data-spaces/*            → list_data_spaces(), get_data_space_members()
+├── calculated-insights/*    → list_calculated_insights(), query_calculated_insight()
+├── data-graphs/*            → list_data_graphs(), query_data_graph()
+├── machine-learning/*       → list_ml_models(), get_prediction()
+├── document-processing/*    → list_document_ai_configs(), extract_document_data()
+├── search-index/*           → list_semantic_searches(), get_semantic_search_config()
+├── identity-resolutions/*   → list_identity_rulesets(), run_identity_resolution()
+└── universalIdLookup/*      → lookup_unified_id()
 ```
 
 ## Contributing
@@ -200,4 +320,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+Apache 2.0 - See [LICENSE.txt](LICENSE.txt) for details.
+
+Original work Copyright (c) 2024 Salesforce, Inc.
