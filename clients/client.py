@@ -351,7 +351,8 @@ class ConnectAPIClient(BaseClient):
         Returns:
             dict: Run result
         """
-        return self._request('POST', f'/data-transforms/{transform_name}/actions/run')
+        # API requires an entity body for POST
+        return self._request('POST', f'/data-transforms/{transform_name}/actions/run', json_data={})
 
     # ========== Connections API (Phase 3) ==========
 

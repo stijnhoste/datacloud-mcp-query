@@ -203,11 +203,12 @@ def main():
         skip_tool(results, "get_segment_members", "No segments found")
         skip_tool(results, "count_segment", "No segments found")
 
-    # Skip mutating segment operations
-    skip_tool(results, "create_segment", "Skipped - mutating operation")
-    skip_tool(results, "update_segment", "Skipped - mutating operation")
-    skip_tool(results, "delete_segment", "Skipped - mutating operation")
-    skip_tool(results, "publish_segment", "Skipped - mutating operation")
+    # Test mutating segment operations - skip create/update/delete for now
+    # API only supports Dbt/Lookalike types which require complex definitions
+    skip_tool(results, "create_segment", "API requires Dbt/Lookalike type with complex criteria")
+    skip_tool(results, "update_segment", "No test segment available")
+    skip_tool(results, "delete_segment", "No test segment available")
+    skip_tool(results, "publish_segment", "Requires published-ready segment")
 
     # ========== 5. ACTIVATIONS ==========
     print("[5/17] Testing Activations tools...")
@@ -242,10 +243,11 @@ def main():
 
     if test_stream:
         test_tool(results, "get_data_stream", get_data_stream, test_stream)
+        # Try running the data stream (expects comma-separated string)
+        test_tool(results, "run_data_stream", run_data_stream, test_stream)
     else:
         skip_tool(results, "get_data_stream", "No data streams found")
-
-    skip_tool(results, "run_data_stream", "Skipped - mutating operation")
+        skip_tool(results, "run_data_stream", "No data streams found")
 
     # ========== 7. DATA TRANSFORMS ==========
     print("[7/17] Testing Data Transforms tools...")
@@ -261,11 +263,12 @@ def main():
     if test_transform:
         test_tool(results, "get_data_transform", get_data_transform, test_transform)
         test_tool(results, "get_transform_run_history", get_transform_run_history, test_transform)
+        # Try running the data transform
+        test_tool(results, "run_data_transform", run_data_transform, test_transform)
     else:
         skip_tool(results, "get_data_transform", "No data transforms found")
         skip_tool(results, "get_transform_run_history", "No data transforms found")
-
-    skip_tool(results, "run_data_transform", "Skipped - mutating operation")
+        skip_tool(results, "run_data_transform", "No data transforms found")
 
     # ========== 8. CONNECTIONS ==========
     print("[8/17] Testing Connections tools...")
@@ -409,10 +412,12 @@ def main():
 
     if test_ruleset:
         test_tool(results, "get_identity_ruleset", get_identity_ruleset, test_ruleset)
+        # Try running identity resolution
+        test_tool(results, "run_identity_resolution", run_identity_resolution, test_ruleset)
     else:
         skip_tool(results, "get_identity_ruleset", "No identity rulesets found")
+        skip_tool(results, "run_identity_resolution", "No identity rulesets found")
 
-    skip_tool(results, "run_identity_resolution", "Skipped - mutating operation")
     skip_tool(results, "lookup_unified_id", "Requires specific source record identifiers")
 
     # ========== 15. ML & AI ==========
