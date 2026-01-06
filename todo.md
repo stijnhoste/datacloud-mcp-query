@@ -25,7 +25,7 @@
 
 ---
 
-## Phase 1: Core Improvements
+## Phase 1: Core Improvements ✅
 
 ### PR #1: Token Caching Security
 **Branch:** `feature/token-caching`
@@ -285,18 +285,18 @@ class DirectAPISession:
 
 ---
 
-## Phase 6: Admin & Config
+## Phase 6: Admin & Config ✅
 
 | Tool | Status | Endpoint |
 |------|--------|----------|
-| `list_identity_rulesets()` | ⬜ | `GET /ssot/identity-resolutions` |
-| `get_identity_ruleset(name)` | ⬜ | `GET /ssot/identity-resolutions/{name}` |
-| `get_limits()` | ⬜ | `GET /ssot/limits` |
-| `run_identity_resolution(...)` | ⬜ | `POST /ssot/identity-resolutions/{name}/actions/run` |
-| `list_data_actions()` | ⬜ | `GET /ssot/data-actions` |
-| `list_data_action_targets()` | ⬜ | `GET /ssot/data-action-targets` |
-| `list_private_network_routes()` | ⬜ | `GET /ssot/private-network-routes` |
-| `get_data_kit_status(id)` | ⬜ | `GET /ssot/data-kit-components/{id}/status` |
+| `list_identity_rulesets()` | ✅ | `GET /ssot/identity-resolutions` |
+| `get_identity_ruleset(name)` | ✅ | `GET /ssot/identity-resolutions/{name}` |
+| `get_limits()` | ✅ | `GET /ssot/limits` |
+| `run_identity_resolution(...)` | ✅ | `POST /ssot/identity-resolutions/{name}/actions/run` |
+| `list_data_actions()` | ✅ | `GET /ssot/data-actions` |
+| `list_data_action_targets()` | ✅ | `GET /ssot/data-action-targets` |
+| `list_private_network_routes()` | ✅ | `GET /ssot/private-network-routes` |
+| `get_data_kit_status(id)` | ✅ | `GET /ssot/data-kit-components/{id}/status` |
 
 ---
 
