@@ -11,6 +11,8 @@ Connect APIs use standard OAuth tokens (no second token exchange like Direct API
 import logging
 from typing import Optional
 
+import requests
+
 from .base import BaseClient
 
 logger = logging.getLogger(__name__)
@@ -156,6 +158,18 @@ class ConnectAPIClient(BaseClient):
             dict: Publish result
         """
         return self._request('POST', f'/segments/{segment_name}/actions/publish')
+
+    def deactivate_segment(self, segment_name: str) -> dict:
+        """
+        Deactivate a published segment.
+
+        Args:
+            segment_name: Name of the segment to deactivate
+
+        Returns:
+            dict: Deactivation result
+        """
+        return self._request('POST', f'/segments/{segment_name}/actions/deactivate')
 
     # ========== Activations API ==========
 
@@ -680,7 +694,7 @@ class ConnectAPIClient(BaseClient):
         # Limits endpoint is at /services/data/vXX.0/limits (not under /ssot/)
         instance_url = self.oauth_session.get_instance_url()
         token = self.oauth_session.get_token()
-        url = f"{instance_url}/services/data/v{API_VERSION}/limits"
+        url = f"{instance_url}/services/data/{self.API_VERSION}/limits"
 
         headers = {
             'Authorization': f'Bearer {token}',

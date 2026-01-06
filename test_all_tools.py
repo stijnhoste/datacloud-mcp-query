@@ -270,14 +270,26 @@ def main():
     # ========== 8. CONNECTIONS ==========
     print("[8/17] Testing Connections tools...")
 
-    test_tool(results, "list_connectors", list_connectors)
-    connections_result = test_tool(results, "list_connections", list_connections)
+    connectors_result = test_tool(results, "list_connectors", list_connectors)
+
+    # list_connections requires a connector_type - get one from list_connectors
+    test_connector_type = None
+    if connectors_result and isinstance(connectors_result, dict):
+        connector_list = connectors_result.get("connectorInfoList", [])
+        if connector_list:
+            test_connector_type = connector_list[0].get("connectorType")
+
+    connections_result = None
+    if test_connector_type:
+        connections_result = test_tool(results, "list_connections", list_connections, test_connector_type)
+    else:
+        skip_tool(results, "list_connections", "No connector types found")
 
     test_connection = None
     if connections_result and isinstance(connections_result, dict):
         connections_list = connections_result.get("connections", connections_result.get("data", []))
         if connections_list:
-            test_connection = connections_list[0].get("name") or connections_list[0].get("connectionName")
+            test_connection = connections_list[0].get("id") or connections_list[0].get("name")
 
     if test_connection:
         test_tool(results, "get_connection", get_connection, test_connection)

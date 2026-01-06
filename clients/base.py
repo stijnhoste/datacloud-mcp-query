@@ -71,6 +71,8 @@ class BaseClient:
         Raises:
             DataCloudAPIError: On API errors (4xx, 5xx responses)
         """
+        # Strip leading slash from endpoint to avoid double-slash in URL
+        endpoint = endpoint.lstrip('/')
         url = f"{self._get_base_url()}/{endpoint}"
         headers = {
             "Authorization": f"Bearer {self.oauth_session.get_token()}",
