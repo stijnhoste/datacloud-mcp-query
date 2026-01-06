@@ -541,7 +541,7 @@ class ConnectAPIClient:
         Returns:
             dict: List of ML model metadata including names, types, and status
         """
-        return self._request('GET', '/ml-models')
+        return self._request('GET', '/machine-learning/configured-models')
 
     def get_ml_model(self, model_name: str) -> dict:
         """
@@ -553,7 +553,7 @@ class ConnectAPIClient:
         Returns:
             dict: ML model details including configuration and metrics
         """
-        return self._request('GET', f'/ml-models/{model_name}')
+        return self._request('GET', f'/machine-learning/configured-models/{model_name}')
 
     def get_prediction(
         self,
@@ -570,9 +570,10 @@ class ConnectAPIClient:
         Returns:
             dict: Prediction results
         """
+        payload = {"configuredModelId": model_name}
         if input_data:
-            return self._request('POST', f'/ml-models/{model_name}/predictions', json_data=input_data)
-        return self._request('GET', f'/ml-models/{model_name}/predictions')
+            payload.update(input_data)
+        return self._request('POST', '/machine-learning/predict', json_data=payload)
 
     def list_model_artifacts(self) -> dict:
         """
@@ -583,7 +584,7 @@ class ConnectAPIClient:
         Returns:
             dict: List of model artifact metadata
         """
-        return self._request('GET', '/ml-model-artifacts')
+        return self._request('GET', '/machine-learning/model-artifacts')
 
     # ========== Document AI API (Phase 5) ==========
 
@@ -597,7 +598,7 @@ class ConnectAPIClient:
         Returns:
             dict: List of Document AI configuration metadata
         """
-        return self._request('GET', '/document-ai-configurations')
+        return self._request('GET', '/document-processing/configurations')
 
     def extract_document_data(
         self,
@@ -616,8 +617,8 @@ class ConnectAPIClient:
         """
         return self._request(
             'POST',
-            f'/document-ai-configurations/{config_name}/actions/extract-data',
-            json_data=document_data
+            '/document-processing/actions/extract-data',
+            json_data={"configName": config_name, **document_data}
         )
 
     # ========== Semantic Search API (Phase 5) ==========
@@ -632,7 +633,7 @@ class ConnectAPIClient:
         Returns:
             dict: List of semantic search metadata
         """
-        return self._request('GET', '/semantic-searches')
+        return self._request('GET', '/search-index')
 
     def get_semantic_search(self, search_name: str) -> dict:
         """
@@ -644,7 +645,7 @@ class ConnectAPIClient:
         Returns:
             dict: Semantic search configuration details
         """
-        return self._request('GET', f'/semantic-searches/{search_name}')
+        return self._request('GET', f'/search-index/{search_name}')
 
     def get_semantic_search_config(self) -> dict:
         """
@@ -653,7 +654,7 @@ class ConnectAPIClient:
         Returns:
             dict: Global semantic search settings
         """
-        return self._request('GET', '/semantic-search-config')
+        return self._request('GET', '/search-index/config')
 
     # ========== Identity Resolution API (Phase 6) ==========
 
@@ -697,14 +698,31 @@ class ConnectAPIClient:
 
     def get_limits(self) -> dict:
         """
-        Get Data Cloud limits and usage.
+        Get Salesforce org limits and usage.
 
         Returns current API rate limits, storage quotas, and usage statistics.
+        Note: This uses the standard Salesforce limits endpoint, not the /ssot/ path.
 
         Returns:
             dict: Limits and current usage
         """
-        return self._request('GET', '/limits')
+        # Limits endpoint is at /services/data/vXX.0/limits (not under /ssot/)
+        instance_url = self.oauth_session.get_instance_url()
+        token = self.oauth_session.get_token()
+        url = f"{instance_url}/services/data/v{API_VERSION}/limits"
+
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers, timeout=120)
+
+        if response.status_code >= 400:
+            logger.error(f"Limits API request failed: {response.status_code} {response.text}")
+            response.raise_for_status()
+
+        return response.json()
 
     # ========== Data Actions API (Phase 6) ==========
 
@@ -756,3 +774,210 @@ class ConnectAPIClient:
             dict: Component status and details
         """
         return self._request('GET', f'/data-kit-components/{component_id}/status')
+
+    # ========== Calculated Insights API (Connect API) ==========
+
+    def list_calculated_insights(self) -> dict:
+        """
+        List all calculated insights.
+
+        Returns:
+            dict: List of calculated insight metadata including dimensions and measures
+        """
+        return self._request('GET', '/calculated-insights')
+
+    def get_calculated_insight(self, api_name: str) -> dict:
+        """
+        Get details for a specific calculated insight.
+
+        Args:
+            api_name: API name of the calculated insight
+
+        Returns:
+            dict: Calculated insight definition
+        """
+        return self._request('GET', f'/calculated-insights/{api_name}')
+
+    def query_calculated_insight(self, ci_name: str, dimensions: list = None,
+                                  measures: list = None, filters: list = None,
+                                  order_by: list = None, limit: int = None) -> dict:
+        """
+        Query calculated insight data.
+
+        Args:
+            ci_name: Name of the calculated insight
+            dimensions: List of dimension fields to include
+            measures: List of measure fields to include
+            filters: List of filter conditions
+            order_by: List of order by clauses
+            limit: Maximum number of rows to return
+
+        Returns:
+            dict: Query results with aggregated data
+        """
+        params = {}
+        if dimensions:
+            params['dimensions'] = ','.join(dimensions)
+        if measures:
+            params['measures'] = ','.join(measures)
+        if filters:
+            params['filters'] = ','.join(filters)
+        if order_by:
+            params['orderBy'] = ','.join(order_by)
+        if limit:
+            params['limit'] = limit
+
+        query_string = '&'.join(f'{k}={v}' for k, v in params.items())
+        path = f'/insight/calculated-insights/{ci_name}'
+        if query_string:
+            path += f'?{query_string}'
+        return self._request('GET', path)
+
+    def get_insight_metadata(self, ci_name: str = None) -> dict:
+        """
+        Get metadata for calculated insights.
+
+        Args:
+            ci_name: Optional specific insight name. If not provided, returns all.
+
+        Returns:
+            dict: Insight metadata including dimensions, measures, and filters
+        """
+        if ci_name:
+            return self._request('GET', f'/insight/metadata/{ci_name}')
+        return self._request('GET', '/insight/metadata')
+
+    # ========== Data Graphs API (Connect API) ==========
+
+    def get_data_graph_metadata(self) -> dict:
+        """
+        Get metadata for all data graphs.
+
+        Returns:
+            dict: List of data graph metadata including entities and relationships
+        """
+        return self._request('GET', '/data-graphs/metadata')
+
+    def get_data_graph(self, graph_name: str) -> dict:
+        """
+        Get details for a specific data graph.
+
+        Args:
+            graph_name: Name of the data graph
+
+        Returns:
+            dict: Data graph definition
+        """
+        return self._request('GET', f'/data-graphs/{graph_name}')
+
+    def query_data_graph_by_id(self, entity_name: str, record_id: str) -> dict:
+        """
+        Query data graph by record ID.
+
+        Args:
+            entity_name: Name of the data graph entity
+            record_id: ID of the record
+
+        Returns:
+            dict: Complete profile with related records
+        """
+        return self._request('GET', f'/data-graphs/data/{entity_name}/{record_id}')
+
+    def query_data_graph_by_lookup(self, entity_name: str, lookup_keys: dict) -> dict:
+        """
+        Query data graph by lookup keys.
+
+        Args:
+            entity_name: Name of the data graph entity
+            lookup_keys: Dictionary of lookup key fields and values
+
+        Returns:
+            dict: Complete profile with related records
+        """
+        import urllib.parse
+        params = urllib.parse.urlencode(lookup_keys)
+        return self._request('GET', f'/data-graphs/data/{entity_name}?{params}')
+
+    # ========== Profile API (Connect API) ==========
+
+    def get_profile_metadata(self, dmo_name: str = None) -> dict:
+        """
+        Get profile metadata.
+
+        Args:
+            dmo_name: Optional DMO name. If not provided, returns all.
+
+        Returns:
+            dict: Profile metadata
+        """
+        if dmo_name:
+            return self._request('GET', f'/profile/metadata/{dmo_name}')
+        return self._request('GET', '/profile/metadata')
+
+    def query_profile(self, dmo_name: str, record_id: str = None,
+                      child_dmo: str = None) -> dict:
+        """
+        Query profile data.
+
+        Args:
+            dmo_name: Name of the data model object
+            record_id: Optional record ID or search key
+            child_dmo: Optional child DMO to include
+
+        Returns:
+            dict: Profile data
+        """
+        if record_id and child_dmo:
+            return self._request('GET', f'/profile/{dmo_name}/{record_id}/{child_dmo}')
+        elif record_id:
+            return self._request('GET', f'/profile/{dmo_name}/{record_id}')
+        return self._request('GET', f'/profile/{dmo_name}')
+
+    # ========== Universal ID Lookup API (Connect API) ==========
+
+    def lookup_unified_id(self, entity_name: str, data_source_id: str,
+                          data_source_object_id: str, source_record_id: str) -> dict:
+        """
+        Look up unified record ID from source record identifiers.
+
+        Args:
+            entity_name: Name of the entity
+            data_source_id: ID of the data source
+            data_source_object_id: ID of the data source object
+            source_record_id: ID of the source record
+
+        Returns:
+            dict: Unified ID lookup result
+        """
+        return self._request(
+            'GET',
+            f'/universalIdLookup/{entity_name}/{data_source_id}/{data_source_object_id}/{source_record_id}'
+        )
+
+    # ========== Metadata API (Connect API) ==========
+
+    def get_metadata(self, entity_name: str = None, entity_type: str = None,
+                     entity_category: str = None) -> dict:
+        """
+        Get metadata for Data Cloud entities.
+
+        Args:
+            entity_name: Optional filter by entity name
+            entity_type: Optional filter by entity type (dll, dlm)
+            entity_category: Optional filter by category
+
+        Returns:
+            dict: Entity metadata
+        """
+        params = {}
+        if entity_name:
+            params['entityName'] = entity_name
+        if entity_type:
+            params['entityType'] = entity_type
+        if entity_category:
+            params['entityCategory'] = entity_category
+
+        if params:
+            query_string = '&'.join(f'{k}={v}' for k, v in params.items())
+            return self._request('GET', f'/metadata?{query_string}')
+        return self._request('GET', '/metadata')
