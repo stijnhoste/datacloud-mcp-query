@@ -26,38 +26,38 @@
 
 ## Quick Start
 
-### 1. Prerequisites
+### Prerequisites
 
 - Python 3.10+
 - [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) installed
 - A Salesforce org with Data Cloud enabled
 
-### 2. Clone and Install
+### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/datacloud-mcp-query.git
+git clone https://github.com/stijnhoste/datacloud-mcp-query.git
 cd datacloud-mcp-query
 pip install -r requirements.txt
-```
 
-### 3. Authenticate with SF CLI
-
-```bash
+# Authenticate with your Data Cloud org
 sf org login web --alias my-dc-org
 ```
 
-### 4. Configure Your MCP Client
+### Configure Your MCP Client
 
-## Adding to Cursor
+Add to your MCP client configuration file:
 
-Add to your Cursor settings (`~/.cursor/mcp.json`):
+| Client | Config File |
+|--------|-------------|
+| Cursor | `~/.cursor/mcp.json` |
+| Claude Code | `~/.claude/mcp.json` |
 
 ```json
 {
   "mcpServers": {
     "datacloud": {
       "command": "python",
-      "args": ["/path/to/datacloud-mcp-query/server.py"],
+      "args": ["/absolute/path/to/datacloud-mcp-query/server.py"],
       "env": {
         "DC_DEFAULT_ORG": "my-dc-org"
       }
@@ -66,23 +66,7 @@ Add to your Cursor settings (`~/.cursor/mcp.json`):
 }
 ```
 
-## Adding to Claude Code
-
-Add to `~/.claude/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "datacloud": {
-      "command": "python",
-      "args": ["/path/to/datacloud-mcp-query/server.py"],
-      "env": {
-        "DC_DEFAULT_ORG": "my-dc-org"
-      }
-    }
-  }
-}
-```
+> **Note:** Replace `/absolute/path/to/` with the actual path where you cloned the repository.
 
 ## Configuration
 
