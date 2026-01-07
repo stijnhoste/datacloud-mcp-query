@@ -67,16 +67,6 @@ def get_insight_metadata(
     return get_connect_api().get_insight_metadata(ci_name=resolve_field_default(ci_name))
 
 
-@mcp.tool(description="Create a calculated insight")
-def create_calculated_insight(
-    insight_definition: str = Field(description="JSON definition for the calculated insight"),
-) -> dict:
-    """Create a new calculated insight."""
-    ensure_session()
-    definition = parse_json_param(insight_definition, "insight_definition")
-    return get_connect_api().create_calculated_insight(definition)
-
-
 @mcp.tool(description="Update a calculated insight")
 def update_calculated_insight(
     api_name: str = Field(description="API name of the insight to update"),

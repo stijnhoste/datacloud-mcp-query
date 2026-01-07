@@ -8,7 +8,7 @@ Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotc
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 156 |
+| **Tools** | 3 | 137 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 
@@ -69,14 +69,14 @@ Connect API (/services/data/v63.0/ssot/*)
 ├── query-sql/*              → query()
 ├── metadata                 → get_metadata(), describe_table_full()
 │
-├── segments/*               → list_segments(), create_segment(), etc.
+├── segments/*               → list_segments(), get_segment(), etc.
 ├── activations/*            → list_activations(), get_activation(), etc.
 │
 ├── data-streams/*           → list_data_streams(), run_data_stream()
 ├── data-transforms/*        → list_data_transforms(), run_data_transform()
 ├── connections/*            → list_connections(), preview_connection()
 │
-├── data-lake-objects/*      → list_data_lake_objects(), create_data_lake_object()
+├── data-lake-objects/*      → list_data_lake_objects(), get_data_lake_object()
 ├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
 ├── data-spaces/*            → list_data_spaces(), get_data_space_members()
 │
@@ -118,7 +118,7 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `DC_DEFAULT_ORG` | No | - | SF CLI org alias to use by default |
 | `DEFAULT_LIST_TABLE_FILTER` | No | `%` | SQL LIKE pattern for filtering tables |
 
-## MCP Tools (156 total)
+## MCP Tools (137 total)
 
 ### Org Management
 | Tool | Description |
@@ -152,7 +152,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `get_segment(segment_name)` | Get segment details |
 | `get_segment_members(segment_name, limit, offset)` | Get segment members |
 | `count_segment(segment_name)` | Count segment members |
-| `create_segment(segment_definition)` | Create segment |
 | `update_segment(segment_name, updates)` | Update segment |
 | `delete_segment(segment_name)` | Delete segment |
 | `publish_segment(segment_name)` | Publish segment for activation |
@@ -194,7 +193,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 |------|-------------|
 | `list_data_lake_objects()` | List all DLOs (raw ingested data) |
 | `get_data_lake_object(object_name)` | Get DLO details |
-| `create_data_lake_object(definition)` | Create DLO |
 
 ### Data Model Objects (DMOs)
 | Tool | Description |
@@ -202,7 +200,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `list_data_model_objects()` | List all DMOs (canonical entities) |
 | `get_data_model_object(object_name)` | Get DMO details |
 | `get_dmo_mappings(object_name)` | Get field mappings |
-| `create_data_model_object(definition)` | Create DMO |
 
 ### Data Spaces
 | Tool | Description |
@@ -270,7 +267,7 @@ Safe to auto-approve (read-only):
 Requires approval:
 - `query` - Executes SQL
 - `query_calculated_insight`, `query_data_graph` - Queries data
-- `create_*`, `update_*`, `delete_*` - Modifies data
+- `update_*`, `delete_*` - Modifies data
 - `run_*` - Executes pipelines
 - `extract_document_data`, `get_prediction` - Processes data
 
@@ -293,7 +290,7 @@ Requires approval:
 | File/Directory | Purpose |
 |----------------|---------|
 | `server.py` | Thin MCP entry point (imports tools package) |
-| `tools/` | Domain-specific tool modules (156 tools total) |
+| `tools/` | Domain-specific tool modules (137 tools total) |
 | `tools/base.py` | Shared mcp instance, session management |
 | `clients/` | API client implementations |
 | `clients/client.py` | Full ConnectAPIClient with all API methods |

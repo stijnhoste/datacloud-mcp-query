@@ -27,16 +27,6 @@ def get_activation_target(
     return get_connect_api().get_activation_target(target_id)
 
 
-@mcp.tool(description="Create an activation target")
-def create_activation_target(
-    target_definition: str = Field(description="JSON definition for the activation target"),
-) -> dict:
-    """Create a new activation target."""
-    ensure_session()
-    definition = parse_json_param(target_definition, "target_definition")
-    return get_connect_api().create_activation_target(definition)
-
-
 @mcp.tool(description="Update an activation target")
 def update_activation_target(
     target_id: str = Field(description="ID of the activation target"),
@@ -66,16 +56,6 @@ def get_activation(
     """Get activation configuration and status."""
     ensure_session()
     return get_connect_api().get_activation(activation_id)
-
-
-@mcp.tool(description="Create an activation")
-def create_activation(
-    activation_definition: str = Field(description="JSON definition for the activation"),
-) -> dict:
-    """Create a new activation for a segment."""
-    ensure_session()
-    definition = parse_json_param(activation_definition, "activation_definition")
-    return get_connect_api().create_activation(definition)
 
 
 @mcp.tool(description="Update an activation")

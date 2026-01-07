@@ -46,28 +46,6 @@ def count_segment(
     return get_connect_api().count_segment(segment_name)
 
 
-@mcp.tool(description="Create a new segment (API supports Dbt/Lookalike types only)")
-def create_segment(
-    segment_definition: str = Field(
-        description="""JSON segment definition. Example:
-{
-  "developerName": "MySegment",
-  "displayName": "My Test Segment",
-  "description": "Segment description",
-  "dataSpace": "default",
-  "segmentOnApiName": "ssot__Individual__dlm",
-  "segmentType": "Standard",
-  "publishSchedule": "Manual"
-}
-NOTE: API only supports Dbt and Lookalike segment types. Standard segments should be created via the UI."""
-    ),
-) -> dict:
-    """Create a new segment from JSON definition."""
-    ensure_session()
-    definition = parse_json_param(segment_definition, "segment_definition")
-    return get_connect_api().create_segment(definition)
-
-
 @mcp.tool(description="Update an existing segment")
 def update_segment(
     segment_name: str = Field(description="Name of the segment to update"),

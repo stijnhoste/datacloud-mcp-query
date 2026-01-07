@@ -28,16 +28,6 @@ def list_data_actions() -> dict:
     return get_connect_api().list_data_actions()
 
 
-@mcp.tool(description="Create a data action")
-def create_data_action(
-    action_definition: str = Field(description="JSON definition for the data action"),
-) -> dict:
-    """Create a new data action."""
-    ensure_session()
-    definition = parse_json_param(action_definition, "action_definition")
-    return get_connect_api().create_data_action(definition)
-
-
 # ============================================================
 # Data Action Targets
 # ============================================================
@@ -56,16 +46,6 @@ def get_data_action_target(
     """Get data action target details."""
     ensure_session()
     return get_connect_api().get_data_action_target(api_name)
-
-
-@mcp.tool(description="Create a data action target")
-def create_data_action_target(
-    target_definition: str = Field(description="JSON definition for the target"),
-) -> dict:
-    """Create a new data action target."""
-    ensure_session()
-    definition = parse_json_param(target_definition, "target_definition")
-    return get_connect_api().create_data_action_target(definition)
 
 
 @mcp.tool(description="Delete a data action target")
@@ -104,16 +84,6 @@ def get_private_network_route(
     """Get private network route details."""
     ensure_session()
     return get_connect_api().get_private_network_route(route_id)
-
-
-@mcp.tool(description="Create a private network route")
-def create_private_network_route(
-    route_definition: str = Field(description="JSON definition for the route"),
-) -> dict:
-    """Create a new private network route."""
-    ensure_session()
-    definition = parse_json_param(route_definition, "route_definition")
-    return get_connect_api().create_private_network_route(definition)
 
 
 @mcp.tool(description="Delete a private network route")

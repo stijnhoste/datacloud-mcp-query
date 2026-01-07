@@ -22,16 +22,6 @@ def get_identity_ruleset(
     return get_connect_api().get_identity_ruleset(ruleset_name)
 
 
-@mcp.tool(description="Create an identity resolution ruleset")
-def create_identity_ruleset(
-    ruleset_definition: str = Field(description="JSON definition for the ruleset"),
-) -> dict:
-    """Create a new identity resolution ruleset."""
-    ensure_session()
-    definition = parse_json_param(ruleset_definition, "ruleset_definition")
-    return get_connect_api().create_identity_ruleset(definition)
-
-
 @mcp.tool(description="Update an identity resolution ruleset")
 def update_identity_ruleset(
     ruleset_name: str = Field(description="Name of the ruleset to update"),

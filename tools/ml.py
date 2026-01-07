@@ -118,16 +118,6 @@ def get_document_ai_config(
     return get_connect_api().get_document_ai_config(config_id)
 
 
-@mcp.tool(description="Create a Document AI configuration")
-def create_document_ai_config(
-    config_definition: str = Field(description="JSON definition for the configuration"),
-) -> dict:
-    """Create a new Document AI configuration."""
-    ensure_session()
-    definition = parse_json_param(config_definition, "config_definition")
-    return get_connect_api().create_document_ai_config(definition)
-
-
 @mcp.tool(description="Update a Document AI configuration")
 def update_document_ai_config(
     config_id: str = Field(description="ID of the configuration to update"),
@@ -203,16 +193,6 @@ def get_semantic_search(
     """Get semantic search configuration."""
     ensure_session()
     return get_connect_api().get_semantic_search(search_name)
-
-
-@mcp.tool(description="Create a semantic search index")
-def create_semantic_search(
-    search_definition: str = Field(description="JSON definition for the search index"),
-) -> dict:
-    """Create a new semantic search index."""
-    ensure_session()
-    definition = parse_json_param(search_definition, "search_definition")
-    return get_connect_api().create_semantic_search(definition)
 
 
 @mcp.tool(description="Update a semantic search index")

@@ -22,16 +22,6 @@ def get_data_transform(
     return get_connect_api().get_data_transform(transform_name)
 
 
-@mcp.tool(description="Create a new data transform")
-def create_data_transform(
-    transform_definition: str = Field(description="JSON definition for the transform"),
-) -> dict:
-    """Create a new data transformation job."""
-    ensure_session()
-    definition = parse_json_param(transform_definition, "transform_definition")
-    return get_connect_api().create_data_transform(definition)
-
-
 @mcp.tool(description="Update a data transform")
 def update_data_transform(
     transform_name: str = Field(description="Name or ID of the transform"),

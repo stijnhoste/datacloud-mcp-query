@@ -30,30 +30,6 @@ def get_data_lake_object(
     return get_connect_api().get_data_lake_object(object_name)
 
 
-@mcp.tool(description="Create a new Data Lake Object")
-def create_data_lake_object(
-    object_definition: str = Field(
-        description="""JSON DLO definition. Use 'dataType' (not 'type') for fields. Example:
-{
-  "name": "MyDLO__dll",
-  "label": "My Data Lake Object",
-  "description": "Description here",
-  "dataSpaceName": "default",
-  "category": "Other",
-  "fields": [
-    {"name": "Id__c", "label": "ID", "dataType": "Text", "isPrimaryKey": true},
-    {"name": "Name__c", "label": "Name", "dataType": "Text"}
-  ]
-}"""
-    ),
-) -> dict:
-    """Create a new Data Lake Object."""
-    ensure_session()
-    definition = parse_json_param(object_definition, "object_definition")
-    definition = normalize_field_definitions(definition)
-    return get_connect_api().create_data_lake_object(definition)
-
-
 @mcp.tool(description="Update a Data Lake Object")
 def update_data_lake_object(
     object_name: str = Field(description="Name of the DLO to update"),
@@ -94,31 +70,6 @@ def get_data_model_object(
     return get_connect_api().get_data_model_object(object_name)
 
 
-@mcp.tool(description="Create a new Data Model Object")
-def create_data_model_object(
-    object_definition: str = Field(
-        description="""JSON DMO definition. Use 'dataType' (not 'type') for fields. Example:
-{
-  "name": "MyDMO__dlm",
-  "label": "My Data Model Object",
-  "description": "Description here",
-  "dataSpaceName": "default",
-  "category": "Other",
-  "type": "DataModelObject",
-  "fields": [
-    {"name": "Id__c", "label": "ID", "dataType": "Text", "isPrimaryKey": true},
-    {"name": "Name__c", "label": "Name", "dataType": "Text"}
-  ]
-}"""
-    ),
-) -> dict:
-    """Create a new Data Model Object."""
-    ensure_session()
-    definition = parse_json_param(object_definition, "object_definition")
-    definition = normalize_field_definitions(definition)
-    return get_connect_api().create_data_model_object(definition)
-
-
 @mcp.tool(description="Update a Data Model Object")
 def update_data_model_object(
     object_name: str = Field(description="Name of the DMO to update"),
@@ -148,17 +99,6 @@ def get_dmo_mappings(
     return get_connect_api().get_dmo_mappings(resolve_field_default(object_name))
 
 
-@mcp.tool(description="Create a field mapping for a DMO")
-def create_dmo_mapping(
-    mapping_definition: str = Field(description="JSON mapping definition"),
-    dataspace: str = Field(default="default", description="Data space name"),
-) -> dict:
-    """Create a new field mapping."""
-    ensure_session()
-    definition = parse_json_param(mapping_definition, "mapping_definition")
-    return get_connect_api().create_dmo_mapping(definition, dataspace=dataspace)
-
-
 @mcp.tool(description="Delete a field mapping")
 def delete_dmo_mapping(
     mapping_name: str = Field(description="Name of the mapping to delete"),
@@ -175,17 +115,6 @@ def get_dmo_relationships(
     """Get relationships defined on a DMO."""
     ensure_session()
     return get_connect_api().get_dmo_relationships(object_name)
-
-
-@mcp.tool(description="Create a relationship on a DMO")
-def create_dmo_relationship(
-    object_name: str = Field(description="Name of the DMO"),
-    relationship_definition: str = Field(description="JSON relationship definition"),
-) -> dict:
-    """Create a new relationship on a DMO."""
-    ensure_session()
-    definition = parse_json_param(relationship_definition, "relationship_definition")
-    return get_connect_api().create_dmo_relationship(object_name, definition)
 
 
 @mcp.tool(description="Delete a relationship")

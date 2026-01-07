@@ -22,16 +22,6 @@ def get_data_space(
     return get_connect_api().get_data_space(space_name)
 
 
-@mcp.tool(description="Create a new data space")
-def create_data_space(
-    space_definition: str = Field(description="JSON definition for the data space"),
-) -> dict:
-    """Create a new data space."""
-    ensure_session()
-    definition = parse_json_param(space_definition, "space_definition")
-    return get_connect_api().create_data_space(definition)
-
-
 @mcp.tool(description="Update a data space")
 def update_data_space(
     space_name: str = Field(description="Name or ID of the data space"),

@@ -27,16 +27,6 @@ def get_connection(
     return get_connect_api().get_connection(connection_id)
 
 
-@mcp.tool(description="Create a new connection")
-def create_connection(
-    connection_definition: str = Field(description="JSON definition for the connection"),
-) -> dict:
-    """Create a new data source connection."""
-    ensure_session()
-    definition = parse_json_param(connection_definition, "connection_definition")
-    return get_connect_api().create_connection(definition)
-
-
 @mcp.tool(description="Update a connection")
 def update_connection(
     connection_id: str = Field(description="ID of the connection"),

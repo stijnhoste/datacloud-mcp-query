@@ -22,16 +22,6 @@ def get_data_stream(
     return get_connect_api().get_data_stream(stream_name)
 
 
-@mcp.tool(description="Create a new data stream")
-def create_data_stream(
-    stream_definition: str = Field(description="JSON definition for the data stream"),
-) -> dict:
-    """Create a new data stream for ingestion."""
-    ensure_session()
-    definition = parse_json_param(stream_definition, "stream_definition")
-    return get_connect_api().create_data_stream(definition)
-
-
 @mcp.tool(description="Update a data stream")
 def update_data_stream(
     stream_name: str = Field(description="Name or ID of the data stream"),

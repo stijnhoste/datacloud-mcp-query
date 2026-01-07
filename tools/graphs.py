@@ -47,16 +47,6 @@ def query_data_graph(
         return {"error": "Must provide either record_id or lookup_keys"}
 
 
-@mcp.tool(description="Create a data graph")
-def create_data_graph(
-    graph_definition: str = Field(description="JSON definition for the data graph"),
-) -> dict:
-    """Create a new data graph."""
-    ensure_session()
-    definition = parse_json_param(graph_definition, "graph_definition")
-    return get_connect_api().create_data_graph(definition)
-
-
 @mcp.tool(description="Delete a data graph")
 def delete_data_graph(
     graph_name: str = Field(description="Name of the data graph to delete"),
