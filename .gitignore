@@ -144,8 +144,10 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-# Local Claude loop state files
-*.local.md
+# macOS
+.DS_Store
 
-# Agent guidelines (auto-generated)
+# Claude Code config
+.claude/
+*.local.md
 AGENTS.md
