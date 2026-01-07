@@ -196,7 +196,7 @@ class ConnectAPIClient(BaseClient):
         Returns:
             dict: Publish result
         """
-        return self._request('POST', f'/segments/{segment_name}/actions/publish')
+        return self._request('POST', f'/segments/{segment_name}/actions/publish', json_data={})
 
     def deactivate_segment(self, segment_name: str) -> dict:
         """
@@ -208,7 +208,7 @@ class ConnectAPIClient(BaseClient):
         Returns:
             dict: Deactivation result
         """
-        return self._request('POST', f'/segments/{segment_name}/actions/deactivate')
+        return self._request('POST', f'/segments/{segment_name}/actions/deactivate', json_data={})
 
     # ========== Activations API ==========
 
@@ -394,7 +394,7 @@ class ConnectAPIClient(BaseClient):
         Returns:
             dict: Available objects
         """
-        return self._request('POST', f'/connections/{connection_name}/objects')
+        return self._request('POST', f'/connections/{connection_name}/objects', json_data={})
 
     def preview_connection(
         self,
@@ -717,7 +717,7 @@ class ConnectAPIClient(BaseClient):
         Returns:
             dict: Run result including job ID
         """
-        return self._request('POST', f'/identity-resolutions/{ruleset_name}/actions/run')
+        return self._request('POST', f'/identity-resolutions/{ruleset_name}/actions/run', json_data={})
 
     # ========== Limits API (Phase 6) ==========
 
@@ -1055,7 +1055,7 @@ class ConnectAPIClient(BaseClient):
 
     def run_calculated_insight(self, api_name: str) -> dict:
         """Run/refresh a calculated insight."""
-        return self._request('POST', f'/calculated-insights/{api_name}/actions/run')
+        return self._request('POST', f'/calculated-insights/{api_name}/actions/run', json_data={})
 
     # ========== Additional Connection Endpoints ==========
 
@@ -1081,7 +1081,7 @@ class ConnectAPIClient(BaseClient):
 
     def get_connection_databases(self, connection_id: str) -> dict:
         """Get databases for a connection."""
-        return self._request('POST', f'/connections/{connection_id}/databases')
+        return self._request('POST', f'/connections/{connection_id}/databases', json_data={})
 
     def get_connection_database_schemas(self, connection_id: str, database: str = None) -> dict:
         """Get database schemas for a connection."""
@@ -1108,7 +1108,7 @@ class ConnectAPIClient(BaseClient):
 
     def refresh_data_graph(self, graph_name: str) -> dict:
         """Refresh a data graph."""
-        return self._request('POST', f'/data-graphs/{graph_name}/actions/refresh')
+        return self._request('POST', f'/data-graphs/{graph_name}/actions/refresh', json_data={})
 
     # ========== Additional Data Transform Endpoints ==========
 
@@ -1126,11 +1126,11 @@ class ConnectAPIClient(BaseClient):
 
     def cancel_data_transform(self, transform_name: str) -> dict:
         """Cancel a running data transform."""
-        return self._request('POST', f'/data-transforms/{transform_name}/actions/cancel')
+        return self._request('POST', f'/data-transforms/{transform_name}/actions/cancel', json_data={})
 
     def retry_data_transform(self, transform_name: str) -> dict:
         """Retry a failed data transform."""
-        return self._request('POST', f'/data-transforms/{transform_name}/actions/retry')
+        return self._request('POST', f'/data-transforms/{transform_name}/actions/retry', json_data={})
 
     def get_transform_schedule(self, transform_name: str) -> dict:
         """Get schedule for a data transform."""
@@ -1154,9 +1154,9 @@ class ConnectAPIClient(BaseClient):
         """Update an existing data stream."""
         return self._request('PATCH', f'/data-streams/{stream_name}', json_data=updates)
 
-    def delete_data_stream(self, stream_name: str) -> dict:
+    def delete_data_stream(self, stream_name: str, delete_dlo: bool = False) -> dict:
         """Delete a data stream."""
-        return self._request('DELETE', f'/data-streams/{stream_name}')
+        return self._request('DELETE', f'/data-streams/{stream_name}?shouldDeleteDataLakeObject={str(delete_dlo).lower()}')
 
     # ========== Additional DLO Endpoints ==========
 
@@ -1236,7 +1236,7 @@ class ConnectAPIClient(BaseClient):
 
     def run_document_ai(self, config_id: str) -> dict:
         """Run Document AI processing for a configuration."""
-        return self._request('POST', f'/document-processing/configurations/{config_id}/actions/run')
+        return self._request('POST', f'/document-processing/configurations/{config_id}/actions/run', json_data={})
 
     def generate_document_schema(self, request_data: dict) -> dict:
         """Generate schema from document samples."""
@@ -1308,7 +1308,7 @@ class ConnectAPIClient(BaseClient):
 
     def get_data_action_target_signing_key(self, api_name: str) -> dict:
         """Get or generate signing key for a data action target."""
-        return self._request('POST', f'/data-action-targets/{api_name}/signing-key')
+        return self._request('POST', f'/data-action-targets/{api_name}/signing-key', json_data={})
 
     # ========== Profile Query Endpoints ==========
 
@@ -1343,7 +1343,8 @@ class ConnectAPIClient(BaseClient):
 
     def undeploy_data_kit(self, data_kit_name: str) -> dict:
         """Undeploy a data kit."""
-        return self._request('POST', f'/data-kits/{data_kit_name}/undeploy')
+        # POST requires an entity body
+        return self._request('POST', f'/data-kits/{data_kit_name}/undeploy', json_data={})
 
     def get_data_kit_component_dependencies(self, data_kit_name: str, component_name: str) -> dict:
         """Get dependencies for a data kit component."""
