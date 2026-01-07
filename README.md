@@ -1,12 +1,12 @@
 # Data Cloud MCP Server (Enhanced Fork)
 
-> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **156 tools**, SF CLI authentication, and full Connect API coverage.
+> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **137 tools**, SF CLI authentication, and full Connect API coverage.
 
 ## What's Different from Upstream
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 156 |
+| **Tools** | 3 | 137 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 | **Setup** | Create Connected App | Just `sf org login web` |
@@ -87,7 +87,20 @@ set_target_org(alias) # Switch to a specific org
 get_target_org()      # See currently selected org
 ```
 
-## Available Tools (156 total)
+## API Limitations
+
+The Salesforce Data Cloud **Connect API** is primarily read-oriented. Create operations for most resources are **not supported** via REST and require:
+
+| Resource Type | Required API |
+|--------------|--------------|
+| Segments, DLOs, DMOs | **Metadata API** (deploy XML) |
+| Data Actions, Activations | **Setup UI** or **Tooling API** |
+| Connections, Network Routes | **Setup UI** only |
+| Identity Rulesets, Transforms | **Metadata API** |
+
+This MCP server uses the Connect API exclusively (works with SF CLI auth), so it supports **read, update, delete, and run** operations but not **create**.
+
+## Available Tools (137 total)
 
 ### Org Management
 | Tool | Description |
@@ -121,7 +134,6 @@ get_target_org()      # See currently selected org
 | `get_segment(name)` | Get segment details |
 | `get_segment_members(name)` | Get segment members |
 | `count_segment(name)` | Count segment members |
-| `create_segment(definition)` | Create segment |
 | `update_segment(name, updates)` | Update segment |
 | `delete_segment(name)` | Delete segment |
 | `publish_segment(name)` | Publish for activation |
@@ -163,7 +175,6 @@ get_target_org()      # See currently selected org
 |------|-------------|
 | `list_data_lake_objects()` | List all DLOs |
 | `get_data_lake_object(name)` | Get DLO details |
-| `create_data_lake_object(def)` | Create DLO |
 
 ### Data Model Objects (DMOs)
 | Tool | Description |
@@ -171,7 +182,6 @@ get_target_org()      # See currently selected org
 | `list_data_model_objects()` | List all DMOs |
 | `get_data_model_object(name)` | Get DMO details |
 | `get_dmo_mappings(name)` | Get field mappings |
-| `create_data_model_object(def)` | Create DMO |
 
 ### Data Spaces
 | Tool | Description |
@@ -279,14 +289,14 @@ Connect API (/services/data/v63.0/ssot/*)
 ├── query-sql/*              → query()
 ├── metadata                 → get_metadata(), describe_table_full()
 │
-├── segments/*               → list_segments(), create_segment(), etc.
+├── segments/*               → list_segments(), get_segment(), etc.
 ├── activations/*            → list_activations(), get_activation(), etc.
 │
 ├── data-streams/*           → list_data_streams(), run_data_stream()
 ├── data-transforms/*        → list_data_transforms(), run_data_transform()
 ├── connections/*            → list_connections(), preview_connection()
 │
-├── data-lake-objects/*      → list_data_lake_objects(), create_data_lake_object()
+├── data-lake-objects/*      → list_data_lake_objects(), get_data_lake_object()
 ├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
 ├── data-spaces/*            → list_data_spaces(), get_data_space_members()
 │
