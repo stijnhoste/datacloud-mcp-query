@@ -4,7 +4,7 @@ SQL query tools - execute, validate, and format queries.
 from typing import Optional
 from pydantic import Field
 
-from connect_api_dc_sql import run_query
+from clients import run_query
 from query_validation import validate_sql_syntax, validate_query_with_metadata, format_query
 
 from .base import (

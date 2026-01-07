@@ -7,9 +7,11 @@ This package provides domain-specific client modules that wrap the
 
 from .base import BaseClient, DataCloudAPIError
 from .client import ConnectAPIClient
+from .sql import run_query
 
 __all__ = [
     'BaseClient',
     'DataCloudAPIError',
     'ConnectAPIClient',
+    'run_query',
 ]

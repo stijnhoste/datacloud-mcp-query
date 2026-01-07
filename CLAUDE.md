@@ -54,9 +54,9 @@ server.py                      # Thin entry point - imports tools package and ru
 ├── clients/                   # API client implementations
 │   ├── __init__.py            # Package init
 │   ├── base.py                # Base HTTP client with request handling
-│   └── client.py              # Full ConnectAPIClient with all API methods
+│   ├── client.py              # Full ConnectAPIClient with all API methods
+│   └── sql.py                 # SQL query client (run_query)
 ├── sf_cli_auth.py             # SF CLI org discovery and authentication
-├── connect_api_dc_sql.py      # Connect API client (query-sql endpoint)
 └── query_validation.py        # SQL validation with sqlparse
 ```
 
@@ -105,7 +105,7 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 - Multi-org support via `list_orgs()`, `set_target_org(alias)`
 - Environment variable `DC_DEFAULT_ORG` for default org
 
-**Query Execution (connect_api_dc_sql.py)**:
+**Query Execution (clients/sql.py)**:
 - Submits SQL to `/services/data/v63.0/ssot/query-sql`
 - Polls for completion using long-polling (`waitTimeMs=10000`)
 - Paginates through results
@@ -298,7 +298,7 @@ Requires approval:
 | `clients/` | API client implementations |
 | `clients/client.py` | Full ConnectAPIClient with all API methods |
 | `sf_cli_auth.py` | SF CLI org discovery and authentication |
-| `connect_api_dc_sql.py` | Connect API client for SQL queries |
+| `clients/sql.py` | SQL query client (run_query) |
 | `query_validation.py` | SQL validation with sqlparse |
 | `requirements.txt` | Python dependencies |
 | `api-reference/API_REFERENCE.md` | Consolidated API endpoint reference |

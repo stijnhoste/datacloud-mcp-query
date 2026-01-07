@@ -5,7 +5,7 @@ import logging
 from typing import Optional
 from pydantic import Field
 
-from connect_api_dc_sql import run_query
+from clients import run_query
 
 from .base import (
     mcp, ensure_session, get_session, get_connect_api, resolve_field_default
