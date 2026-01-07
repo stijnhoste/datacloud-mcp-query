@@ -4,22 +4,14 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
+from .base import DataCloudAPIError
+
 # Note: This module uses duck-typing for the session object.
 # It expects any object with get_token() and get_instance_url() methods.
 # Works with both OAuthSession (original) and SFCLISession (this fork).
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
-
-
-class DataCloudQueryError(Exception):
-    """Custom exception for Data Cloud query errors with structured information."""
-
-    def __init__(self, status_code: int, reason: str, message: str):
-        self.status_code = status_code
-        self.reason = reason
-        self.message = message
-        super().__init__(f"[{status_code}] {reason}: {message}")
 
 
 def _handle_error_response(response: requests.Response):
@@ -45,7 +37,7 @@ def _handle_error_response(response: requests.Response):
             pass
 
         # Raise custom exception with structured error information
-        raise DataCloudQueryError(
+        raise DataCloudAPIError(
             status_code=response.status_code,
             reason=response.reason,
             message=message,
@@ -92,7 +84,7 @@ def run_query(
     status_obj = submit_payload.get("status", {})
     query_id = status_obj.get("queryId") or submit_payload.get("queryId")
     if not query_id:
-        raise DataCloudQueryError(
+        raise DataCloudAPIError(
             status_code=500,
             reason="MissingQueryId",
             message="Query ID not returned by the API."
@@ -154,7 +146,7 @@ def run_query(
         returned_rows = int(chunk.get("returnedRows", len(chunk_rows)))
 
         if returned_rows == 0:
-            raise DataCloudQueryError(
+            raise DataCloudAPIError(
                 status_code=500,
                 reason="MissingRows",
                 message="Expected rows to be returned, but received 0."

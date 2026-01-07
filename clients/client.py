@@ -939,25 +939,6 @@ class ConnectAPIClient(BaseClient):
             return self._request('GET', f'/profile/metadata/{dmo_name}')
         return self._request('GET', '/profile/metadata')
 
-    def query_profile(self, dmo_name: str, record_id: str = None,
-                      child_dmo: str = None) -> dict:
-        """
-        Query profile data.
-
-        Args:
-            dmo_name: Name of the data model object
-            record_id: Optional record ID or search key
-            child_dmo: Optional child DMO to include
-
-        Returns:
-            dict: Profile data
-        """
-        if record_id and child_dmo:
-            return self._request('GET', f'/profile/{dmo_name}/{record_id}/{child_dmo}')
-        elif record_id:
-            return self._request('GET', f'/profile/{dmo_name}/{record_id}')
-        return self._request('GET', f'/profile/{dmo_name}')
-
     # ========== Universal ID Lookup API (Connect API) ==========
 
     def lookup_unified_id(self, entity_name: str, data_source_id: str,
@@ -1097,10 +1078,6 @@ class ConnectAPIClient(BaseClient):
     def create_data_graph(self, graph_definition: dict) -> dict:
         """Create a new data graph."""
         return self._request('POST', '/data-graphs', json_data=graph_definition)
-
-    def get_data_graph(self, graph_name: str) -> dict:
-        """Get details for a specific data graph."""
-        return self._request('GET', f'/data-graphs/{graph_name}')
 
     def delete_data_graph(self, graph_name: str) -> dict:
         """Delete a data graph."""
@@ -1311,12 +1288,6 @@ class ConnectAPIClient(BaseClient):
         return self._request('POST', f'/data-action-targets/{api_name}/signing-key', json_data={})
 
     # ========== Profile Query Endpoints ==========
-
-    def get_profile_metadata(self, dmo_name: str = None) -> dict:
-        """Get profile metadata, optionally filtered by DMO."""
-        if dmo_name:
-            return self._request('GET', f'/profile/metadata/{dmo_name}')
-        return self._request('GET', '/profile/metadata')
 
     def query_profile(self, dmo_name: str, limit: int = None, offset: int = None) -> dict:
         """Query profile records from a DMO."""
