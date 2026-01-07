@@ -25,7 +25,7 @@ sf org login web --alias my-dc-org
 python server.py
 
 # Test the query API directly
-python connect_api_dc_sql.py
+python -m clients.sql
 ```
 
 ## Architecture
