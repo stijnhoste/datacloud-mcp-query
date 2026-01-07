@@ -1,12 +1,12 @@
 # Data Cloud MCP Server (Enhanced Fork)
 
-> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **137 tools**, SF CLI authentication, and full Connect API coverage.
+> Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotcom/datacloud-mcp-query) with **121 tools**, SF CLI authentication, and full Connect API coverage.
 
 ## What's Different from Upstream
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 137 |
+| **Tools** | 3 | 121 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 | **Setup** | Create Connected App | Just `sf org login web` |
@@ -100,7 +100,7 @@ The Salesforce Data Cloud **Connect API** is primarily read-oriented. Create ope
 
 This MCP server uses the Connect API exclusively (works with SF CLI auth), so it supports **read, update, delete, and run** operations but not **create**.
 
-## Available Tools (137 total)
+## Available Tools (121 total)
 
 ### Org Management
 | Tool | Description |
@@ -136,14 +136,12 @@ This MCP server uses the Connect API exclusively (works with SF CLI auth), so it
 | `count_segment(name)` | Count segment members |
 | `update_segment(name, updates)` | Update segment |
 | `delete_segment(name)` | Delete segment |
-| `publish_segment(name)` | Publish for activation |
 
 ### Activations
 | Tool | Description |
 |------|-------------|
 | `list_activations()` | List all activations |
 | `get_activation(id)` | Get activation details |
-| `get_audience_records(id)` | Get audience DMO records |
 | `list_activation_targets()` | List activation targets |
 
 ### Data Streams
@@ -151,7 +149,6 @@ This MCP server uses the Connect API exclusively (works with SF CLI auth), so it
 |------|-------------|
 | `list_data_streams()` | List all data streams |
 | `get_data_stream(name)` | Get stream details |
-| `run_data_stream(names)` | Run data streams |
 
 ### Data Transforms
 | Tool | Description |
@@ -167,7 +164,6 @@ This MCP server uses the Connect API exclusively (works with SF CLI auth), so it
 | `list_connections()` | List all connections |
 | `get_connection(name)` | Get connection details |
 | `get_connection_objects(name)` | Get available objects |
-| `preview_connection(name, object)` | Preview data |
 | `list_connectors()` | List connector types |
 
 ### Data Lake Objects (DLOs)
@@ -181,7 +177,6 @@ This MCP server uses the Connect API exclusively (works with SF CLI auth), so it
 |------|-------------|
 | `list_data_model_objects()` | List all DMOs |
 | `get_data_model_object(name)` | Get DMO details |
-| `get_dmo_mappings(name)` | Get field mappings |
 
 ### Data Spaces
 | Tool | Description |
@@ -208,7 +203,6 @@ This MCP server uses the Connect API exclusively (works with SF CLI auth), so it
 | `lookup_unified_id(...)` | Look up unified IDs |
 | `list_identity_rulesets()` | List identity rulesets |
 | `get_identity_ruleset(name)` | Get ruleset details |
-| `run_identity_resolution(name)` | Run identity resolution |
 
 ### AI & ML
 | Tool | Description |
@@ -233,8 +227,6 @@ This MCP server uses the Connect API exclusively (works with SF CLI auth), so it
 | Tool | Description |
 |------|-------------|
 | `get_limits()` | Get API limits and usage |
-| `list_private_network_routes()` | List network routes |
-| `get_data_kit_status(id)` | Get deployment status |
 
 ## autoApprove Settings
 
@@ -252,7 +244,7 @@ For agentic workflows, auto-approve read-only tools:
     "list_data_transforms", "get_data_transform", "get_transform_run_history",
     "list_connections", "get_connection", "list_connectors",
     "list_data_lake_objects", "get_data_lake_object",
-    "list_data_model_objects", "get_data_model_object", "get_dmo_mappings",
+    "list_data_model_objects", "get_data_model_object",
     "list_data_spaces", "get_data_space", "get_data_space_members",
     "list_calculated_insights", "list_data_graphs",
     "list_identity_rulesets", "get_identity_ruleset",
@@ -260,7 +252,6 @@ For agentic workflows, auto-approve read-only tools:
     "list_document_ai_configs",
     "list_semantic_searches", "get_semantic_search", "get_semantic_search_config",
     "get_limits", "list_data_actions", "list_data_action_targets",
-    "list_private_network_routes",
     "validate_query", "format_sql"
   ]
 }
@@ -292,17 +283,17 @@ Connect API (/services/data/v63.0/ssot/*)
 ├── segments/*               → list_segments(), get_segment(), etc.
 ├── activations/*            → list_activations(), get_activation(), etc.
 │
-├── data-streams/*           → list_data_streams(), run_data_stream()
+├── data-streams/*           → list_data_streams(), get_data_stream()
 ├── data-transforms/*        → list_data_transforms(), run_data_transform()
-├── connections/*            → list_connections(), preview_connection()
+├── connections/*            → list_connections(), get_connection()
 │
 ├── data-lake-objects/*      → list_data_lake_objects(), get_data_lake_object()
-├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
+├── data-model-objects/*     → list_data_model_objects(), get_data_model_object()
 ├── data-spaces/*            → list_data_spaces(), get_data_space_members()
 │
 ├── calculated-insights/*    → list_calculated_insights(), query_calculated_insight()
 ├── data-graphs/*            → list_data_graphs(), query_data_graph()
-├── identity-resolutions/*   → list_identity_rulesets(), run_identity_resolution()
+├── identity-resolutions/*   → list_identity_rulesets(), get_identity_ruleset()
 ├── universalIdLookup/*      → lookup_unified_id()
 │
 ├── machine-learning/*       → list_ml_models(), get_prediction()        ─┐

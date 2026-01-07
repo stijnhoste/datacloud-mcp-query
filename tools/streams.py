@@ -40,13 +40,3 @@ def delete_data_stream(
     """Delete a data stream permanently."""
     ensure_session()
     return get_connect_api().delete_data_stream(stream_name)
-
-
-@mcp.tool(description="Run one or more data streams")
-def run_data_stream(
-    stream_names: str = Field(description="Comma-separated list of stream names to run"),
-) -> dict:
-    """Trigger data stream execution."""
-    ensure_session()
-    names = [s.strip() for s in stream_names.split(",")]
-    return get_connect_api().run_data_stream(names)

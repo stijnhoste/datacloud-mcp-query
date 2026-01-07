@@ -66,15 +66,6 @@ def delete_segment(
     return get_connect_api().delete_segment(segment_name)
 
 
-@mcp.tool(description="Publish a segment for activation")
-def publish_segment(
-    segment_name: str = Field(description="Name of the segment to publish"),
-) -> dict:
-    """Publish a segment to make it available for activation."""
-    ensure_session()
-    return get_connect_api().publish_segment(segment_name)
-
-
 @mcp.tool(description="Deactivate a segment")
 def deactivate_segment(
     segment_name: str = Field(description="Name of the segment to deactivate"),

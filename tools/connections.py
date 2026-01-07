@@ -56,17 +56,6 @@ def get_connection_objects(
     return get_connect_api().get_connection_objects(connection_id)
 
 
-@mcp.tool(description="Preview data from a connection object")
-def preview_connection(
-    connection_id: str = Field(description="ID of the connection"),
-    object_name: str = Field(description="Name of the object to preview"),
-    limit: int = Field(default=10, description="Maximum rows to return"),
-) -> dict:
-    """Preview sample data from a connection object."""
-    ensure_session()
-    return get_connect_api().preview_connection(connection_id, object_name, limit=limit)
-
-
 @mcp.tool(description="Get schema for a connection")
 def get_connection_schema(
     connection_id: str = Field(description="ID of the connection"),

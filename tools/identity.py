@@ -42,15 +42,6 @@ def delete_identity_ruleset(
     return get_connect_api().delete_identity_ruleset(ruleset_name)
 
 
-@mcp.tool(description="Run identity resolution")
-def run_identity_resolution(
-    ruleset_name: str = Field(description="Name of the ruleset to run"),
-) -> dict:
-    """Trigger identity resolution for a ruleset."""
-    ensure_session()
-    return get_connect_api().run_identity_resolution(ruleset_name)
-
-
 @mcp.tool(description="Look up unified record ID from source identifiers")
 def lookup_unified_id(
     entity_name: str = Field(description="Name of the entity"),

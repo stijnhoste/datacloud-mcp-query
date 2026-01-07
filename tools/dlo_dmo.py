@@ -70,35 +70,6 @@ def get_data_model_object(
     return get_connect_api().get_data_model_object(object_name)
 
 
-@mcp.tool(description="Update a Data Model Object")
-def update_data_model_object(
-    object_name: str = Field(description="Name of the DMO to update"),
-    updates: str = Field(description="JSON object with fields to update"),
-) -> dict:
-    """Update DMO properties."""
-    ensure_session()
-    update_data = parse_json_param(updates, "updates")
-    return get_connect_api().update_data_model_object(object_name, update_data)
-
-
-@mcp.tool(description="Delete a Data Model Object")
-def delete_data_model_object(
-    object_name: str = Field(description="Name of the DMO to delete"),
-) -> dict:
-    """Delete a DMO permanently."""
-    ensure_session()
-    return get_connect_api().delete_data_model_object(object_name)
-
-
-@mcp.tool(description="Get field mappings for a DMO")
-def get_dmo_mappings(
-    object_name: Optional[str] = Field(default=None, description="Filter by DMO name"),
-) -> dict:
-    """Get field mappings between DLOs and DMOs."""
-    ensure_session()
-    return get_connect_api().get_dmo_mappings(resolve_field_default(object_name))
-
-
 @mcp.tool(description="Delete a field mapping")
 def delete_dmo_mapping(
     mapping_name: str = Field(description="Name of the mapping to delete"),

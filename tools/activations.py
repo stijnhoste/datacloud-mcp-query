@@ -27,17 +27,6 @@ def get_activation_target(
     return get_connect_api().get_activation_target(target_id)
 
 
-@mcp.tool(description="Update an activation target")
-def update_activation_target(
-    target_id: str = Field(description="ID of the activation target"),
-    updates: str = Field(description="JSON object with fields to update"),
-) -> dict:
-    """Update activation target configuration."""
-    ensure_session()
-    update_data = parse_json_param(updates, "updates")
-    return get_connect_api().update_activation_target(target_id, update_data)
-
-
 # ============================================================
 # Activations
 # ============================================================
@@ -78,19 +67,3 @@ def delete_activation(
     return get_connect_api().delete_activation(activation_id)
 
 
-@mcp.tool(description="Get audience DMO records for an activation")
-def get_audience_records(
-    activation_id: str = Field(description="ID of the activation"),
-    limit: int = Field(default=100, description="Maximum records to return"),
-    offset: int = Field(default=0, description="Number of records to skip"),
-) -> dict:
-    """Get the audience records that will be sent to the activation target."""
-    ensure_session()
-    return get_connect_api().get_audience_records(activation_id, limit=limit, offset=offset)
-
-
-@mcp.tool(description="List external activation platforms")
-def list_activation_external_platforms() -> dict:
-    """List available external platforms for activations."""
-    ensure_session()
-    return get_connect_api().list_activation_external_platforms()

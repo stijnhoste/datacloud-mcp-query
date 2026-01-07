@@ -7,15 +7,6 @@ from pydantic import Field
 from .base import mcp, ensure_session, get_connect_api, resolve_field_default
 
 
-@mcp.tool(description="Get profile metadata for DMOs")
-def get_profile_metadata(
-    dmo_name: Optional[str] = Field(default=None, description="Filter by DMO name"),
-) -> dict:
-    """Get metadata about queryable profiles."""
-    ensure_session()
-    return get_connect_api().get_profile_metadata(dmo_name=resolve_field_default(dmo_name))
-
-
 @mcp.tool(description="Query profile records from a DMO")
 def query_profile(
     dmo_name: str = Field(description="Name of the DMO to query"),

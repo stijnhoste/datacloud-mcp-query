@@ -8,7 +8,7 @@ Enhanced fork of [Salesforce's datacloud-mcp-query](https://github.com/forcedotc
 
 | Aspect | Original | This Fork |
 |--------|----------|-----------|
-| **Tools** | 3 | 137 |
+| **Tools** | 3 | 121 |
 | **Auth** | Connected App OAuth | SF CLI (no setup required) |
 | **APIs** | Connect API (queries only) | Connect API (full coverage) |
 
@@ -72,17 +72,17 @@ Connect API (/services/data/v63.0/ssot/*)
 ├── segments/*               → list_segments(), get_segment(), etc.
 ├── activations/*            → list_activations(), get_activation(), etc.
 │
-├── data-streams/*           → list_data_streams(), run_data_stream()
+├── data-streams/*           → list_data_streams(), get_data_stream()
 ├── data-transforms/*        → list_data_transforms(), run_data_transform()
-├── connections/*            → list_connections(), preview_connection()
+├── connections/*            → list_connections(), get_connection()
 │
 ├── data-lake-objects/*      → list_data_lake_objects(), get_data_lake_object()
-├── data-model-objects/*     → list_data_model_objects(), get_dmo_mappings()
+├── data-model-objects/*     → list_data_model_objects(), get_data_model_object()
 ├── data-spaces/*            → list_data_spaces(), get_data_space_members()
 │
 ├── calculated-insights/*    → list_calculated_insights(), query_calculated_insight()
 ├── data-graphs/*            → list_data_graphs(), query_data_graph()
-├── identity-resolutions/*   → list_identity_rulesets(), run_identity_resolution()
+├── identity-resolutions/*   → list_identity_rulesets(), get_identity_ruleset()
 ├── universalIdLookup/*      → lookup_unified_id()
 │
 ├── machine-learning/*       → list_ml_models(), get_prediction()
@@ -118,7 +118,7 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `DC_DEFAULT_ORG` | No | - | SF CLI org alias to use by default |
 | `DEFAULT_LIST_TABLE_FILTER` | No | `%` | SQL LIKE pattern for filtering tables |
 
-## MCP Tools (137 total)
+## MCP Tools (121 total)
 
 ### Org Management
 | Tool | Description |
@@ -154,14 +154,12 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `count_segment(segment_name)` | Count segment members |
 | `update_segment(segment_name, updates)` | Update segment |
 | `delete_segment(segment_name)` | Delete segment |
-| `publish_segment(segment_name)` | Publish segment for activation |
 
 ### Activations
 | Tool | Description |
 |------|-------------|
 | `list_activations()` | List all activations |
 | `get_activation(activation_id)` | Get activation details |
-| `get_audience_records(activation_id, limit, offset)` | Get audience DMO records |
 | `list_activation_targets()` | List activation targets |
 
 ### Data Streams
@@ -169,7 +167,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 |------|-------------|
 | `list_data_streams()` | List all data streams |
 | `get_data_stream(stream_name)` | Get data stream details |
-| `run_data_stream(stream_names)` | Run data streams |
 
 ### Data Transforms
 | Tool | Description |
@@ -185,7 +182,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `list_connections()` | List all connections |
 | `get_connection(connection_name)` | Get connection details |
 | `get_connection_objects(connection_name)` | Get available objects |
-| `preview_connection(connection_name, object_name, limit)` | Preview connection data |
 | `list_connectors()` | List available connector types |
 
 ### Data Lake Objects (DLOs)
@@ -199,7 +195,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 |------|-------------|
 | `list_data_model_objects()` | List all DMOs (canonical entities) |
 | `get_data_model_object(object_name)` | Get DMO details |
-| `get_dmo_mappings(object_name)` | Get field mappings |
 
 ### Data Spaces
 | Tool | Description |
@@ -226,7 +221,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | `lookup_unified_id(...)` | Look up unified IDs from source records |
 | `list_identity_rulesets()` | List identity resolution rulesets |
 | `get_identity_ruleset(ruleset_name)` | Get ruleset details |
-| `run_identity_resolution(ruleset_name)` | Run identity resolution |
 
 ### AI & ML
 | Tool | Description |
@@ -251,8 +245,6 @@ See `api-reference/API_REFERENCE.md` for detailed endpoint documentation.
 | Tool | Description |
 |------|-------------|
 | `get_limits()` | Get API limits and usage |
-| `list_private_network_routes()` | List private network routes |
-| `get_data_kit_status(component_id)` | Get data kit deployment status |
 
 ## Agentic Workflow Tips
 
@@ -290,7 +282,7 @@ Requires approval:
 | File/Directory | Purpose |
 |----------------|---------|
 | `server.py` | Thin MCP entry point (imports tools package) |
-| `tools/` | Domain-specific tool modules (137 tools total) |
+| `tools/` | Domain-specific tool modules (121 tools total) |
 | `tools/base.py` | Shared mcp instance, session management |
 | `clients/` | API client implementations |
 | `clients/client.py` | Full ConnectAPIClient with all API methods |

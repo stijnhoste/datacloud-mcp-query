@@ -67,55 +67,8 @@ def get_data_action_target_signing_key(
 
 
 # ============================================================
-# Private Network Routes
-# ============================================================
-
-@mcp.tool(description="List all private network routes")
-def list_private_network_routes() -> dict:
-    """List all private network routes."""
-    ensure_session()
-    return get_connect_api().list_private_network_routes()
-
-
-@mcp.tool(description="Get a private network route")
-def get_private_network_route(
-    route_id: str = Field(description="ID of the route"),
-) -> dict:
-    """Get private network route details."""
-    ensure_session()
-    return get_connect_api().get_private_network_route(route_id)
-
-
-@mcp.tool(description="Delete a private network route")
-def delete_private_network_route(
-    route_id: str = Field(description="ID of the route to delete"),
-) -> dict:
-    """Delete a private network route."""
-    ensure_session()
-    return get_connect_api().delete_private_network_route(route_id)
-
-
-# ============================================================
 # Data Kits
 # ============================================================
-
-@mcp.tool(description="Get status of a data kit component")
-def get_data_kit_status(
-    component_id: str = Field(description="ID of the data kit component"),
-) -> dict:
-    """Get deployment status for a data kit component."""
-    ensure_session()
-    return get_connect_api().get_data_kit_status(component_id)
-
-
-@mcp.tool(description="Undeploy a data kit")
-def undeploy_data_kit(
-    data_kit_name: str = Field(description="Name of the data kit to undeploy"),
-) -> dict:
-    """Undeploy a data kit from the org."""
-    ensure_session()
-    return get_connect_api().undeploy_data_kit(data_kit_name)
-
 
 @mcp.tool(description="Get data kit component dependencies")
 def get_data_kit_component_dependencies(
